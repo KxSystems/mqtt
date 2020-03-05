@@ -6,7 +6,7 @@ This is part of the [_Fusion for kdb+_](http://code.kx.com/v2/interfaces/fusion/
 
 Please report problems related to this interface in the issues section [here](https://github.com/KxSystems/mqtt/issues).
 
-See [code.kx.com/v2/interfaces/mqtt](http://code.kx.com/v2/interfaces/mqtt/) for full documentation.
+See [code.kx.com/v2/interfaces/mqtt](https://github.com/cmccarthy1/docs/blob/mqtt/docs/interfaces/mqtt.md) for full documentation. (set to current holding location for now will be updated)
 
 ## Build Instructions
 
