@@ -41,7 +41,7 @@ static int validinit;
 static void msgsent(void *context, MQTTClient_deliveryToken dt){
   long msgsz = 1 + sizeof(dt);
   char *p,*msgbuf = malloc(msgsz + sizeof(long));;
-  p=msgbuf;
+  p = msgbuf;
   memcpy(p, &msgsz, sizeof(long));
   memcpy(p += sizeof(long), "a", 1);
   memcpy(p += 1, &dt, sizeof(dt));
@@ -97,20 +97,36 @@ EXP K pub(K topic, K msg, K kqos, K kret){
     return krr("topic type");
   if(msg->t != KC)
     return krr("payload type");
-  SW(kqos->t){
-    CS(-KH,qos = kqos->h);
-    CS(-KI,qos = kqos->i);
-    CS(-KJ,qos = kqos->j);
-    CD:return krr("qos type");
+  switch(kqos->t){
+    case -KH:
+      qos = kqos->h;
+      break;
+    case -KI:
+      qos = kqos->i;
+      break;
+    case -KJ:
+      qos = kqos->j;
+      break;
+    default:
+      return krr("qos type");
   }
   if(qos<0 || qos>2)
     return krr("invalid qos");
-  SW(kret->t){
-    CS(-KB, ret = kret->g);
-    CS(-KH, ret = kret->h);
-    CS(-KI, ret = kret->i);
-    CS(-KJ, ret = kret->j);
-    CD:return krr("retained type");
+  switch(kret->t){
+    case -KB:
+      ret = kret->g;
+      break;
+    case -KH:
+      ret = kret->h;
+      break;
+    case -KI:
+      ret = kret->i;
+      break;
+    case -KJ:
+      ret = kret->j;
+      break;
+    default:
+      return krr("retained type");
   }
   if(client == 0)
     return krr("not connected");
@@ -151,7 +167,8 @@ static void resetsz(void){
 static void pr0(K x){
   if(!x)
   return;
-  if(-128 == x->t)fprintf(stderr,"%s\n",x->s);
+  if(-128 == x->t)
+    fprintf(stderr,"%s\n",x->s);
   r0(x);
 }
 
@@ -178,16 +195,22 @@ K mqttCallback(int fd){
   sz1 += recv(fd, buf+sz1, sz0-sz1, MSG_WAITALL);
   if(sz0!=sz1)
     return printf("error in callback\n"),(K)0;
-  SW(buf[0]){
-    CS('a', qmsgsent(buf+1, sz0-1));
-    CS('b', qmsgrcvd(buf+1, sz0-1));
-    CS('c', qdisconn(buf+1, sz0-1));
+  switch(buf[0]){
+    case 'a':
+      qmsgsent(buf+1, sz0-1);
+      break;
+    case 'b':
+      qmsgrcvd(buf+1, sz0-1);
+      break;
+    case 'c':
+      qdisconn(buf+1, sz0-1);
+      break;
   }
   resetsz();
   return (K)0;
 }
 
-ZV detach(V){
+static void detach(void){
  int sp;
  if((sp=spair[0])){
   sd0x(sp,0);
