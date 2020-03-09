@@ -31,161 +31,223 @@ static int spair[2];
 #define UNUSED(x) x
 #endif
 
-#define K3(f) K f(K x,K y,K z)
-#define K4(f) K f(K x,K y,K z,K r)
-#define KR -128
-#define KNL (K)0
 #define MSGMAXSIZE 1048576
 
-Z MQTTClient client;
-ZC buf[MSGMAXSIZE];
-ZJ sz0,sz1;
-ZI validinit;
+static MQTTClient client;
+static char buf[MSGMAXSIZE];
+static long sz0,sz1;
+static int validinit;
 
-ZV msgsent(V *context,MQTTClient_deliveryToken dt){
-  J msgsz=1+sizeof(dt);
-  C *p,*msgbuf = malloc(msgsz+sizeof(J));;
-  p=msgbuf;
-  memcpy(p,&msgsz,sizeof(J));
-  memcpy(p+=sizeof(J),"a",1);
-  memcpy(p+=1,&dt,sizeof(dt));
-  send(spair[1],msgbuf,msgsz+sizeof(J),0);
-  free(msgbuf);
+// Function prototypes needed for q callable functions
+static void msgsent(void *context, MQTTClient_deliveryToken dt);
+static int msgrcvd(void *context, char* topic, int topicLen, MQTTClient_message *msg);
+static void disconn(void *context, char* cause);
+
+/* Establish a tcp connection from a q process to mqtt client
+ * tcpconn = tcp connection being connected to (symbol)
+ * pname   = name to be associated with the connecting process (symbol)
+*/
+EXP K conn(K tcpconn,K pname){
+  if(tcpconn->t != -KS)
+    return krr("addr type");
+  if(pname->t != -KS)
+    return krr("client type");
+  client = 0;
+  MQTTClient_create(&client, tcpconn->s, pname->s, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+  MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+  conn_opts.keepAliveInterval = 20;
+  conn_opts.cleansession = 1;
+  MQTTClient_setCallbacks(client, NULL, disconn, msgrcvd, msgsent);
+  int success_conn = MQTTClient_connect(client, &conn_opts);
+  if(success_conn != MQTTCLIENT_SUCCESS)
+    return krr("connection failed");
+  return (K)0;
 }
 
-ZI msgrcvd(V *context,S topic,I topicLen,MQTTClient_message *msg){
-  J topiclen=strlen(topic);
-  J msgsz=1+sizeof(J)+topiclen+(msg->payloadlen);
-  C *p,*msgbuf=malloc(msgsz+sizeof(J));
-  p=msgbuf;
-  memcpy(p,&msgsz,sizeof(J));
-  memcpy(p+=sizeof(J),"b",1);
-  memcpy(p+=1,&topiclen,sizeof(J));
-  memcpy(p+=sizeof(J),topic,topiclen);
-  memcpy(p+=topiclen,msg->payload,msg->payloadlen);
-  send(spair[1],msgbuf,msgsz+sizeof(J),0);
-  free(msgbuf);
-  R 1;
-}
-
-ZV disconn(V *context,S cause){
-  J msgsz=1;
-  C *p,*msgbuf=malloc(msgsz+sizeof(J));
-  p=msgbuf;
-  memcpy(p,&msgsz,sizeof(J));
-  memcpy(p+=sizeof(J),"c",1);
-  send(spair[1],msgbuf,msgsz+sizeof(J),0);
-  free(msgbuf);
-}
-
-EXP K2(conn){
-  if(x->t!=-KS)R krr("addr type");
-  if(y->t!=-KS)R krr("client type");
-  client=0;
-  MQTTClient_create(&client,x->s,y->s,MQTTCLIENT_PERSISTENCE_NONE,NULL);
-  MQTTClient_connectOptions conn_opts=MQTTClient_connectOptions_initializer;
-  conn_opts.keepAliveInterval=20;
-  conn_opts.cleansession=1;
-  MQTTClient_setCallbacks(client,NULL,disconn,msgrcvd,msgsent);
-  I r=MQTTClient_connect(client,&conn_opts);
-  if(r!=MQTTCLIENT_SUCCESS)R krr("connection failed");
-  R KNL;
-}
-
-EXP K4(pub){
-  J jr,jq;
-  if(x->t!=-KS)R krr("topic type");
-  if(y->t!= KC)R krr("payload type");
-  SW(z->t){
-    CS(-KH,jq=z->h);
-    CS(-KI,jq=z->i);
-    CS(-KJ,jq=z->j);
-    CD:R krr("qos type");
+/* Publish a message to a specified topic
+ * topic = topic name as a symbol
+ * msg   = message content as a string
+ * kqos  = quality of service to be set "ijh"
+ * kret  = does the broker retain messages after sending to current subscribers "bijh"
+ * For kret/kqos see https://mosquitto.org/man/mqtt-7.html
+*/
+EXP K pub(K topic, K msg, K kqos, K kret){
+  long ret, qos;
+  if(topic->t != -KS)
+    return krr("topic type");
+  if(msg->t != KC)
+    return krr("payload type");
+  switch(kqos->t){
+    case -KH:
+      qos = kqos->h;
+      break;
+    case -KI:
+      qos = kqos->i;
+      break;
+    case -KJ:
+      qos = kqos->j;
+      break;
+    default:
+      return krr("qos type");
   }
-  if(jq<0||jq>2)R krr("invalid qos");
-  SW(r->t){
-    CS(-KB,jr=r->g);
-    CS(-KH,jr=r->h);
-    CS(-KI,jr=r->i);
-    CS(-KJ,jr=r->j);
-    CD:R krr("retained type");
+  if(qos<0 || qos>2)
+    return krr("invalid qos");
+  switch(kret->t){
+    case -KB:
+      ret = kret->g;
+      break;
+    case -KH:
+      ret = kret->h;
+      break;
+    case -KI:
+      ret = kret->i;
+      break;
+    case -KJ:
+      ret = kret->j;
+      break;
+    default:
+      return krr("retained type");
   }
-  if(client==0)R krr("not connected");
-  MQTTClient_message pubmsg=MQTTClient_message_initializer;
-  pubmsg.payload   =(S)kG(y);
-  pubmsg.payloadlen=y->n;
-  pubmsg.qos       =jq;
-  pubmsg.retained  =jr;
-  MQTTClient_deliveryToken token=0;
-  MQTTClient_publishMessage(client,x->s,&pubmsg,&token);
-  R kj((J)token);
+  if(client == 0)
+    return krr("not connected");
+  MQTTClient_message pubmsg = MQTTClient_message_initializer;
+  pubmsg.payload    = (char*)kG(msg);
+  pubmsg.payloadlen = msg->n;
+  pubmsg.qos        = qos;
+  pubmsg.retained   = ret;
+  MQTTClient_deliveryToken token = 0;
+  MQTTClient_publishMessage(client, topic->s, &pubmsg, &token);
+  return kj((long)token);
 }
 
-EXP K1(sub){
-  if(x->t!=-KS)R krr("topic type");
-  if(client==0)R krr("not connected");
-  MQTTClient_subscribe(client,x->s,1);
-  R KNL;
+/* Subscribe to a topic
+ * topic = topic name as a symbol
+*/
+EXP K sub(K topic){
+  if(topic->t != -KS)
+    return krr("topic type");
+  if(client == 0)
+    return krr("not connected");
+  MQTTClient_subscribe(client, topic->s, 1);
+  return (K)0;
 }
 
-EXP K1(unsub){
-  if(x->t!=-KS)R krr("topic type");
-  if(client==0)R krr("not connected");
-  MQTTClient_unsubscribe(client,x->s);
-  R KNL;
+/* Unsubscribe from a topic
+ * topic = topic name as a symbol
+*/
+EXP K unsub(K topic){
+  if(topic->t != -KS)
+    return krr("topic type");
+  if(client==0)
+    return krr("not connected");
+  MQTTClient_unsubscribe(client, topic->s);
+  return (K)0;
 }
-    
-ZV resetsz(V){
+
+
+// Function definitions for above prototypes
+static void msgsent(void *context, MQTTClient_deliveryToken dt){
+  long msgsz = 1 + sizeof(dt);
+  char *p,*msgbuf = malloc(msgsz + sizeof(long));;
+  p = msgbuf;
+  memcpy(p, &msgsz, sizeof(long));
+  memcpy(p += sizeof(long), "a", 1);
+  memcpy(p += 1, &dt, sizeof(dt));
+  send(spair[1], msgbuf, msgsz + sizeof(long), 0);
+  free(msgbuf);
+}
+
+static int msgrcvd(void *context, char* topic, int topicLen, MQTTClient_message *msg){
+  long topiclen = strlen(topic);
+  long msgsz = 1 + sizeof(long) + topiclen + (msg->payloadlen);
+  char *p,*msgbuf = malloc(msgsz + sizeof(long));
+  p = msgbuf;
+  memcpy(p, &msgsz, sizeof(long));
+  memcpy(p += sizeof(long), "b", 1);
+  memcpy(p += 1, &topiclen, sizeof(long));
+  memcpy(p += sizeof(long), topic, topiclen);
+  memcpy(p += topiclen, msg->payload, msg->payloadlen);
+  send(spair[1], msgbuf, msgsz + sizeof(long), 0);
+  free(msgbuf);
+  return 1;
+}
+
+static void disconn(void *context, char* cause){
+  long msgsz = 1;
+  char *p,*msgbuf = malloc(msgsz + sizeof(long));
+  p = msgbuf;
+  memcpy(p, &msgsz, sizeof(long));
+  memcpy(p += sizeof(long), "c", 1);
+  send(spair[1], msgbuf, msgsz + sizeof(long), 0);
+  free(msgbuf);
+}
+
+static void resetsz(void){
   sz0=0;
   sz1=0;
 }   
    
 // release K object (print any errors) 
-ZV pr0(K x){
-  if(!x)R;
-  if(KR==xt)fprintf(stderr,"%s\n",x->s);
+static void pr0(K x){
+  if(!x)
+  return;
+  if(-128 == x->t)
+    fprintf(stderr,"%s\n",x->s);
   r0(x);
 }
 
-V qmsgsent(C* p,J sz){
-  K dt=kj(*(J*)p);
-  pr0(k(0,(S)".mqtt.msgsent",dt,KNL));
+// Callback function definitions
+void qmsgsent(char* p,long sz){
+  K dt = kj(*(long*)p);
+  pr0(k(0, (char*)".mqtt.msgsent", dt, (K)0));
 }
 
-V qmsgrcvd(C* p,J sz){
-  J tsz=*(J*)p;
-  p+=sizeof(J);
-  K topic=kpn(p,tsz);
-  p+=tsz;
-  K msg=kpn(p,sz-(tsz+sizeof(J)));
-  pr0(k(0,(S)".mqtt.msgrcvd",topic,msg,KNL));
+void qmsgrcvd(char* p,long sz){
+  long tsz = *(long*)p;
+  p += sizeof(long);
+  K topic = kpn(p,tsz);
+  p += tsz;
+  K msg = kpn(p, sz - (tsz+sizeof(long)));
+  pr0(k(0, (char*)".mqtt.msgrcvd", topic, msg, (K)0));
 }
 
-V qdisconn(C* p,J sz){
-  pr0(k(0,(S)".mqtt.disconn",ktn(0,0),KNL));
+void qdisconn(char* p,long sz){
+  pr0(k(0, (char*)".mqtt.disconn", ktn(0,0), (K)0));
 }
 
-K mqttCallback(I fd){
-  recv(fd,(char *)&sz0,sizeof(J),0);
-  sz1+=recv(fd,buf+sz1,sz0-sz1,MSG_WAITALL);
+
+/* Socketpair initialization, callback definition and clean up functionality
+ * detach function initialized at exit, socketpair start issues handled
+ * callback function set to loop on socketpair connection
+*/
+
+K mqttCallback(int fd){
+  recv(fd, (char *)&sz0, sizeof(long), 0);
+  sz1 += recv(fd, buf+sz1, sz0-sz1, MSG_WAITALL);
   if(sz0!=sz1)
-    R printf("oops\n"),KNL;
-  SW(buf[0]){
-    CS('a',qmsgsent(buf+1,sz0-1));
-    CS('b',qmsgrcvd(buf+1,sz0-1));
-    CS('c',qdisconn(buf+1,sz0-1));
+    return printf("error in callback\n"),(K)0;
+  switch(buf[0]){
+    case 'a':
+      qmsgsent(buf+1, sz0-1);
+      break;
+    case 'b':
+      qmsgrcvd(buf+1, sz0-1);
+      break;
+    case 'c':
+      qdisconn(buf+1, sz0-1);
+      break;
   }
   resetsz();
-  R KNL;
+  return (K)0;
 }
 
-ZV detach(V){
- I sp;
- if(sp=spair[0]){
+static void detach(void){
+ int sp;
+ if((sp=spair[0])){
   sd0x(sp,0);
   close(sp);
  }
- if(sp=spair[1])
+ if((sp=spair[1]))
   close(sp);
  spair[0]=0;
  spair[1]=0;
@@ -194,14 +256,15 @@ ZV detach(V){
 
 EXP K init(K UNUSED(X)){
   if(!(0==validinit))
-   R 0;
+   return 0;
   if(dumb_socketpair(spair,1) == SOCKET_ERROR){
-   fprintf(stderr,"Init failed. socketpair: %s\n",strerror(errno));
-  R 0;
+   fprintf(stderr,"Init failed. socketpair: %s\n", strerror(errno));
+  return 0;
   }
   resetsz();
-  pr0(sd1(-spair[0],&mqttCallback));
-  validinit=1;
+  pr0(sd1(-spair[0], &mqttCallback));
+  validinit = 1;
   atexit(detach);
-  R 0;
+  return 0;
 }
+

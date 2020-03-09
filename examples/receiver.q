@@ -6,6 +6,7 @@
 .mqtt.sub[`topic1];
 .mqtt.sub[`topic2];
 
+// Define the table schema to handle incoming messages
 .mqtt.tab:([]topic:`symbol$();
        msg_sent:`timestamp$();
        msg_recv:`timestamp$();
