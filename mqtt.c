@@ -48,19 +48,20 @@ static void disconn(void *context, char* cause);
  * pname   = name to be associated with the connecting process (symbol)
 */
 EXP K conn(K tcpconn,K pname){
+  int err;
   if(tcpconn->t != -KS)
     return krr("addr type");
   if(pname->t != -KS)
     return krr("client type");
   client = 0;
-  MQTTClient_create(&client, tcpconn->s, pname->s, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+  if(MQTTCLIENT_SUCCESS != (err = MQTTClient_create(&client, tcpconn->s, pname->s, MQTTCLIENT_PERSISTENCE_NONE, NULL)))
+    return krr((S)MQTTClient_strerror(err));
   MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
   conn_opts.keepAliveInterval = 20;
   conn_opts.cleansession = 1;
   MQTTClient_setCallbacks(client, NULL, disconn, msgrcvd, msgsent);
-  int success_conn = MQTTClient_connect(client, &conn_opts);
-  if(success_conn != MQTTCLIENT_SUCCESS)
-    return krr("connection failed");
+  if(MQTTCLIENT_SUCCESS != (err = MQTTClient_connect(client, &conn_opts)))
+    return krr((S)MQTTClient_strerror(err));
   return (K)0;
 }
 
@@ -73,6 +74,7 @@ EXP K conn(K tcpconn,K pname){
 */
 EXP K pub(K topic, K msg, K kqos, K kret){
   long ret, qos;
+  int err;
   if(topic->t != -KS)
     return krr("topic type");
   if(msg->t != KC)
@@ -116,7 +118,8 @@ EXP K pub(K topic, K msg, K kqos, K kret){
   pubmsg.qos        = qos;
   pubmsg.retained   = ret;
   MQTTClient_deliveryToken token = 0;
-  MQTTClient_publishMessage(client, topic->s, &pubmsg, &token);
+  if(MQTTCLIENT_SUCCESS != (err = MQTTClient_publishMessage(client, topic->s, &pubmsg, &token)))
+    return krr((S)MQTTClient_strerror(err));
   return kj((long)token);
 }
 
@@ -124,11 +127,13 @@ EXP K pub(K topic, K msg, K kqos, K kret){
  * topic = topic name as a symbol
 */
 EXP K sub(K topic){
+  int err;
   if(topic->t != -KS)
     return krr("topic type");
   if(client == 0)
     return krr("not connected");
-  MQTTClient_subscribe(client, topic->s, 1);
+  if(MQTTCLIENT_SUCCESS != (err = MQTTClient_subscribe(client, topic->s, 1)))
+    return krr((S)MQTTClient_strerror(err));
   return (K)0;
 }
 
@@ -136,11 +141,13 @@ EXP K sub(K topic){
  * topic = topic name as a symbol
 */
 EXP K unsub(K topic){
+  int err;
   if(topic->t != -KS)
     return krr("topic type");
   if(client==0)
     return krr("not connected");
-  MQTTClient_unsubscribe(client, topic->s);
+  if(MQTTCLIENT_SUCCESS != (err = MQTTClient_unsubscribe(client, topic->s)))
+    return krr((S)MQTTClient_strerror(err));
   return (K)0;
 }
 
