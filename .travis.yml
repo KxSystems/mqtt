@@ -4,15 +4,17 @@ dist: trusty
 
 os:
 - linux
+- osx
 
 before_install:
-  - wget -O paho-mqtt-c-linux.tar.gz https://github.com/eclipse/paho.mqtt.c/archive/v1.3.2.tar.gz
-  - tar -zxf paho-mqtt-c-linux.tar.gz
-  - sudo apt-get update -qq # Update quietly.  
-  - sudo apt-get install -y libssl-dev
+- wget -O paho-mqtt-c-linux.tar.gz https://github.com/eclipse/paho.mqtt.c/archive/v1.3.2.tar.gz
+- tar -zxf paho-mqtt-c-linux.tar.gz
+- sudo apt-get update -qq # Update quietly.  
+- sudo apt-get install -y libssl-dev
 
-
-script:
+before_script:
 - make --directory paho.mqtt.c-1.3.2
 - sudo make install --directory paho.mqtt.c-1.3.2
+
+script:
 - make 
