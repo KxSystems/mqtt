@@ -14,5 +14,5 @@ before_install:
 
 script:
 - make --directory paho.mqtt.c-1.3.2
-- make install --directory paho.mqtt.c-1.3.2
+- sudo make install --directory paho.mqtt.c-1.3.2
 - make 
