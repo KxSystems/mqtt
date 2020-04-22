@@ -8,7 +8,8 @@ os:
 before_install:
   - wget -O paho-mqtt-c-linux.tar.gz https://github.com/eclipse/paho.mqtt.c/archive/v1.3.2.tar.gz
   - tar -zxf paho-mqtt-c-linux.tar.gz
-  - sudo apt-get install -y openssl-devel
+  - sudo apt-get update -qq # Update quietly.  
+  - sudo apt-get install -y libssl-dev
 
 
 script:
