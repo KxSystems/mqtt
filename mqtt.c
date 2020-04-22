@@ -282,7 +282,7 @@ K mqttCallback(int fd)
             qdisconn(body, actual);
             break;
         default:
-            fprintf(stderr, "mqttCallback - invalid callback type: %li\n", cb_hdr.header.msg_type);
+            fprintf(stderr, "mqttCallback - invalid callback type: %u\n", cb_hdr.header.msg_type);
         }
     }
 
