@@ -46,7 +46,7 @@ $make clean
 
 Samples docker files are provided in `docker_linux to` create a Centos environment with both `mqtt` and `paho.mqtt.c` 
 
-The source directories are specified at the top of `mqtt_build.bat` which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the libraries (check git doesn't change the line endings to CRLF) .
+The source directories are specified at the top of `mqtt_build.bat` which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the libraries.
 
 ### Windows
 
