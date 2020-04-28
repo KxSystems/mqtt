@@ -11,6 +11,7 @@ curl -fskSL -o ../q.lib https://github.com/KxSystems/kdb/raw/master/w64/q.lib   
 
 SET PAHO_MQTT_INCLUDE=%PAHO_MQTT%"\src"
 SET PAHO_MQTT_LIB=%PAHO_MQTT%"\build.paho\src"
+:: Remove quote pairs from concatenation
 SET PAHO_MQTT_INCLUDE=%PAHO_MQTT_INCLUDE:""=%
 SET PAHO_MQTT_LIB=%PAHO_MQTT_LIB:""=%
 
@@ -22,6 +23,8 @@ set LIB=%PAHO_MQTT_LIB%;%LIB%
 cl /LD /DKXVER=3 /DWIN32 /I%PAHO_MQTT_INCLUDE% /Femqtt.dll /O2 ../mqtt.c ../q.lib
 set LIB=%OLDLIB%
 set PATH=%OP%
+
+CALL ..\vs2019\mqtt_install.bat mqtt.dll
 
 ENDLOCAL
 exit /b 0

@@ -5,10 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="examples">
       <UniqueIdentifier>{1518ff04-d853-4200-b40e-8d92f3c2ce0a}</UniqueIdentifier>
     </Filter>
@@ -31,9 +27,6 @@
     <None Include="..\examples\receiver.q">
       <Filter>examples</Filter>
     </None>
-    <None Include="..\examples\symlink_dlls.bat">
-      <Filter>examples</Filter>
-    </None>
     <None Include="..\docker_linux\Dockerfile.build">
       <Filter>docker_linux</Filter>
     </None>
@@ -49,5 +42,9 @@
     <None Include="..\makefile" />
     <None Include="..\mqtt.q" />
     <None Include="..\README.md" />
+    <None Include="mqtt_install.bat" />
+    <None Include="..\examples\symlink_paho.bat">
+      <Filter>examples</Filter>
+    </None>
   </ItemGroup>
 </Project>

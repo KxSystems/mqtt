@@ -108,6 +108,9 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>mqtt_install.bat "$(TargetPath)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -140,6 +143,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>mqtt_install.bat "$(TargetPath)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\mqtt.c" />
@@ -151,10 +157,11 @@
     <None Include="..\docker_linux\mqtt_build.sh" />
     <None Include="..\examples\producer.q" />
     <None Include="..\examples\receiver.q" />
-    <None Include="..\examples\symlink_dlls.bat" />
+    <None Include="..\examples\symlink_paho.bat" />
     <None Include="..\makefile" />
     <None Include="..\mqtt.q" />
     <None Include="..\README.md" />
+    <None Include="mqtt_install.bat" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

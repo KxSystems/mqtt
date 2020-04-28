@@ -58,7 +58,7 @@ Alternatively the simple script `build/build.bat` performs the build from the co
 
 Basic q producer and receiver examples are available in the `examples` subdirectory, which connect to the MQTT broker at port 1883.  [Mosquitto](https://mosquitto.org/download/) can be used to install a local MQTT instance as a Windows service, which can be connected to from the Windows host or from a docker container (updating the connection address as appropriate).
 
-These require the built libraries to either be installed on the system or be present in the `examples` directory.  To assist with this `mqtt_build.sh` used by the docker build will symlink `mqtt.so` from the build location and running `symlink_dlls.bat` does likewise on Windows for `mqtt.dll`  (along with the `paho.mqtt.c` DLLs).
+These require the built libraries to either be installed on the system or be present in the `examples` directory.  To assist with this `mqtt_build.sh` used by the docker build runs `make install ` which copies `mqtt.so` to `$QHOME/$QARCH`.  On Windows, `vs2019/mqtt_install.bat` does likewise for `mqtt.dll` and is run both by the VS2019 solution (as a post-install step) and `build/build.bat`.  However, the `paho.mqtt.c` DLLs also need to present so `examples\symlink_paho.bat` can be used to symlink them to the `examples` directory.
 
 ## Documentation
 
