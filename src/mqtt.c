@@ -118,7 +118,7 @@ EXP K pub(K topic, K msg, K kqos, K kret){
   MQTTClient_deliveryToken token = 0;
   if(MQTTCLIENT_SUCCESS != (err = MQTTClient_publishMessage(client, topic->s, &pubmsg, &token)))
     return krr((S)MQTTClient_strerror(err));
-  return kj((long)token);
+  return kj((J)token);
 }
 
 /* Subscribe to a topic
@@ -169,50 +169,44 @@ struct CallbackDataStr
 typedef struct CallbackDataStr CallbackData;
 
 // Function definitions for above prototypes
-static void msgsent(void* context, MQTTClient_deliveryToken dt)
-{
-    // Body contains: <dt>
-    const long msg_size = sizeof(CallbackData) + sizeof(dt);
-    CallbackData* msg = malloc(msg_size);
-    msg->body_size = sizeof(dt);
-    msg->header.msg_type = MSG_TYPE_SEND;
-    memcpy(&(msg[1]), &dt, sizeof(dt));
-
-    send(spair[1], (char*)msg, msg_size, 0);
-    free(msg);
+static void msgsent(void* context, MQTTClient_deliveryToken dt){
+  (void)context;
+  // Body contains: <dt>
+  const long msg_size = sizeof(CallbackData) + sizeof(dt);
+  CallbackData* msg = malloc(msg_size);
+  msg->body_size = sizeof(dt);
+  msg->header.msg_type = MSG_TYPE_SEND;
+  memcpy(&(msg[1]), &dt, sizeof(dt));
+  send(spair[1], (char*)msg, msg_size, 0);
+  free(msg);
 }
 
-static int msgrcvd(void* context, char* topic, int unused, MQTTClient_message* mq_msg)
-{
-    // Body contains: <topic_len><topic><payload>
-    (void)unused;
-    long topic_len = strlen(topic);
-    long msg_size = sizeof(CallbackData) + sizeof(topic_len) + topic_len + mq_msg->payloadlen;
-    CallbackData* msg = malloc(msg_size);
-    msg->body_size = sizeof(topic_len) + topic_len + mq_msg->payloadlen;
-    msg->header.msg_type = MSG_TYPE_RCVD;
-
-    char* p = (char*)&(msg[1]);
-    memcpy(p, &topic_len, sizeof(topic_len));
-    memcpy(p += sizeof(topic_len), topic, topic_len);
-    memcpy(p += topic_len, mq_msg->payload, mq_msg->payloadlen);
-
-    send(spair[1], (char*)msg, msg_size, 0);
-    free(msg);
-
-    return 1;
+static int msgrcvd(void* context, char* topic, int unused, MQTTClient_message* mq_msg){
+  // Body contains: <topic_len><topic><payload>
+  (void)unused;(void)context;
+  long topic_len = strlen(topic);
+  long msg_size = sizeof(CallbackData) + sizeof(topic_len) + topic_len + mq_msg->payloadlen;
+  CallbackData* msg = malloc(msg_size);
+  msg->body_size = sizeof(topic_len) + topic_len + mq_msg->payloadlen;
+  msg->header.msg_type = MSG_TYPE_RCVD;
+  char* p = (char*)&(msg[1]);
+  memcpy(p, &topic_len, sizeof(topic_len));
+  memcpy(p += sizeof(topic_len), topic, topic_len);
+  memcpy(p += topic_len, mq_msg->payload, mq_msg->payloadlen);
+  send(spair[1], (char*)msg, msg_size, 0);
+  free(msg);
+  return 1;
 }
 
-static void disconn(void* context, char* cause)
-{
-    // Body contains: <>
-    const long msg_size = sizeof(CallbackData);
-    CallbackData* msg = malloc(msg_size);
-    msg->body_size = 0;
-    msg->header.msg_type = MSG_TYPE_DISCONN;
-
-    send(spair[1], (char*)msg, msg_size, 0);
-    free(msg);
+static void disconn(void* context, char* cause){
+  (void)context;(void)cause;
+  // Body contains: <>
+  const long msg_size = sizeof(CallbackData);
+  CallbackData* msg = malloc(msg_size);
+  msg->body_size = 0;
+  msg->header.msg_type = MSG_TYPE_DISCONN;
+  send(spair[1], (char*)msg, msg_size, 0);
+  free(msg);
 }
 
 // release K object (print any errors) 
@@ -226,6 +220,7 @@ static void pr0(K x){
 
 // Callback function definitions
 void qmsgsent(char* p,long sz){
+  (void)sz;
   K dt = kj(*(long*)p);
   pr0(k(0, (char*)".mqtt.msgsent", dt, (K)0));
 }
@@ -240,6 +235,7 @@ void qmsgrcvd(char* p,long sz){
 }
 
 void qdisconn(char* p,long sz){
+  (void)p;(void)sz;
   pr0(k(0, (char*)".mqtt.disconn", ktn(0,0), (K)0));
 }
 
@@ -253,7 +249,7 @@ K mqttCallback(int fd)
     CallbackData cb_hdr;
     long rc = recv(fd, (char*)&cb_hdr, sizeof(cb_hdr), 0);
     const long expected = cb_hdr.body_size;
-    if (rc < sizeof(cb_hdr) || expected < 0)
+    if (rc < (long)sizeof(cb_hdr) || expected < 0)
     {
         fprintf(stderr, "recv(1) error: %li, expected: %li\n", rc, expected);
         return (K)0;
