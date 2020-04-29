@@ -1,29 +1,31 @@
 #ifdef _WIN32
 #include <winsock2.h>
 #include <windows.h>
-#include <include/MQTTClient.h>
 #pragma comment(lib,"ws2_32.lib")
 #pragma comment(lib,"paho-mqtt3a.lib")
 #pragma comment(lib,"paho-mqtt3as.lib")
 #pragma comment(lib,"paho-mqtt3c.lib")
 #pragma comment(lib,"paho-mqtt3cs.lib")
+#pragma comment(lib,"q.lib")
 #define EXP __declspec(dllexport)
 static SOCKET spair[2];
 #else
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/socket.h>
-#include "MQTTClient.h"
 #define EXP
 #define SOCKET_ERROR -1
 static int spair[2];
 #endif
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include "socketpair.c"
 #include "k.h"
+
+#include <MQTTClient.h>
 
 #ifdef __GNUC__
 #define UNUSED(x) x __attribute__((__unused__))
@@ -31,16 +33,12 @@ static int spair[2];
 #define UNUSED(x) x
 #endif
 
-#define MSGMAXSIZE 1048576
-
 static MQTTClient client;
-static char buf[MSGMAXSIZE];
-static long sz0,sz1;
 static int validinit;
 
 // Function prototypes needed for q callable functions
 static void msgsent(void *context, MQTTClient_deliveryToken dt);
-static int msgrcvd(void *context, char* topic, int topicLen, MQTTClient_message *msg);
+static int msgrcvd(void *context, char* topic, int unused, MQTTClient_message *msg);
 static void disconn(void *context, char* cause);
 
 /* Establish a tcp connection from a q process to mqtt client
@@ -120,7 +118,7 @@ EXP K pub(K topic, K msg, K kqos, K kret){
   MQTTClient_deliveryToken token = 0;
   if(MQTTCLIENT_SUCCESS != (err = MQTTClient_publishMessage(client, topic->s, &pubmsg, &token)))
     return krr((S)MQTTClient_strerror(err));
-  return kj((long)token);
+  return kj((J)token);
 }
 
 /* Subscribe to a topic
@@ -151,49 +149,63 @@ EXP K unsub(K topic){
   return (K)0;
 }
 
+// Callback data structure
+struct CallbackDataStr{
+  union{
+    char reserved[8];   // reserve space for flags, aligned to 64 bit word
+    enum{
+      MSG_TYPE_SEND = 9876,   // arbitrary uncommon value
+      MSG_TYPE_RCVD,
+      MSG_TYPE_DISCONN
+    } msg_type;
+  } header;
+
+  long body_size;
+  // Start of dynamic data
+};
+typedef struct CallbackDataStr CallbackData;
 
 // Function definitions for above prototypes
-static void msgsent(void *context, MQTTClient_deliveryToken dt){
-  long msgsz = 1 + sizeof(dt);
-  char *p,*msgbuf = malloc(msgsz + sizeof(long));;
-  p = msgbuf;
-  memcpy(p, &msgsz, sizeof(long));
-  memcpy(p += sizeof(long), "a", 1);
-  memcpy(p += 1, &dt, sizeof(dt));
-  send(spair[1], msgbuf, msgsz + sizeof(long), 0);
-  free(msgbuf);
+static void msgsent(void* context, MQTTClient_deliveryToken dt){
+  (void)context;
+  // Body contains: <dt>
+  const long msg_size = sizeof(CallbackData) + sizeof(dt);
+  CallbackData* msg = malloc(msg_size);
+  msg->body_size = sizeof(dt);
+  msg->header.msg_type = MSG_TYPE_SEND;
+  memcpy(&(msg[1]), &dt, sizeof(dt));
+  send(spair[1], (char*)msg, msg_size, 0);
+  free(msg);
 }
 
-static int msgrcvd(void *context, char* topic, int topicLen, MQTTClient_message *msg){
-  long topiclen = strlen(topic);
-  long msgsz = 1 + sizeof(long) + topiclen + (msg->payloadlen);
-  char *p,*msgbuf = malloc(msgsz + sizeof(long));
-  p = msgbuf;
-  memcpy(p, &msgsz, sizeof(long));
-  memcpy(p += sizeof(long), "b", 1);
-  memcpy(p += 1, &topiclen, sizeof(long));
-  memcpy(p += sizeof(long), topic, topiclen);
-  memcpy(p += topiclen, msg->payload, msg->payloadlen);
-  send(spair[1], msgbuf, msgsz + sizeof(long), 0);
-  free(msgbuf);
+static int msgrcvd(void* context, char* topic, int unused, MQTTClient_message* mq_msg){
+  // Body contains: <topic_len><topic><payload>
+  (void)unused;(void)context;
+  long topic_len = strlen(topic);
+  long msg_size = sizeof(CallbackData) + sizeof(topic_len) + topic_len + mq_msg->payloadlen;
+  CallbackData* msg = malloc(msg_size);
+  msg->body_size = sizeof(topic_len) + topic_len + mq_msg->payloadlen;
+  msg->header.msg_type = MSG_TYPE_RCVD;
+  char* p = (char*)&(msg[1]);
+  memcpy(p, &topic_len, sizeof(topic_len));
+  memcpy(p += sizeof(topic_len), topic, topic_len);
+  memcpy(p += topic_len, mq_msg->payload, mq_msg->payloadlen);
+  send(spair[1], (char*)msg, msg_size, 0);
+  free(msg);
   return 1;
 }
 
-static void disconn(void *context, char* cause){
-  long msgsz = 1;
-  char *p,*msgbuf = malloc(msgsz + sizeof(long));
-  p = msgbuf;
-  memcpy(p, &msgsz, sizeof(long));
-  memcpy(p += sizeof(long), "c", 1);
-  send(spair[1], msgbuf, msgsz + sizeof(long), 0);
-  free(msgbuf);
+static void disconn(void* context, char* cause){
+  (void)context;(void)cause;
+  // Body contains: <>
+  const long msg_size = sizeof(CallbackData);
+  CallbackData* msg = malloc(msg_size);
+  msg->body_size = 0;
+  msg->header.msg_type = MSG_TYPE_DISCONN;
+  send(spair[1], (char*)msg, msg_size, 0);
+  free(msg);
 }
 
-static void resetsz(void){
-  sz0=0;
-  sz1=0;
-}   
-   
 // release K object (print any errors) 
 static void pr0(K x){
   if(!x)
@@ -205,7 +217,8 @@ static void pr0(K x){
 
 // Callback function definitions
 void qmsgsent(char* p,long sz){
-  K dt = kj(*(long*)p);
+  (void)sz;
+  K dt = kj(*(MQTTClient_deliveryToken*)p);
   pr0(k(0, (char*)".mqtt.msgsent", dt, (K)0));
 }
 
@@ -219,6 +232,7 @@ void qmsgrcvd(char* p,long sz){
 }
 
 void qdisconn(char* p,long sz){
+  (void)p;(void)sz;
   pr0(k(0, (char*)".mqtt.disconn", ktn(0,0), (K)0));
 }
 
@@ -227,49 +241,67 @@ void qdisconn(char* p,long sz){
  * detach function initialized at exit, socketpair start issues handled
  * callback function set to loop on socketpair connection
 */
-
 K mqttCallback(int fd){
-  recv(fd, (char *)&sz0, sizeof(long), 0);
-  sz1 += recv(fd, buf+sz1, sz0-sz1, MSG_WAITALL);
-  if(sz0!=sz1)
-    return printf("error in callback\n"),(K)0;
-  switch(buf[0]){
-    case 'a':
-      qmsgsent(buf+1, sz0-1);
-      break;
-    case 'b':
-      qmsgrcvd(buf+1, sz0-1);
-      break;
-    case 'c':
-      qdisconn(buf+1, sz0-1);
-      break;
+  CallbackData cb_hdr;
+  long rc = recv(fd, (char*)&cb_hdr, sizeof(cb_hdr), 0);
+  const long expected = cb_hdr.body_size;
+  if (rc < (long)sizeof(cb_hdr) || expected < 0){
+    fprintf(stderr, "recv(1) error: %li, expected: %li\n", rc, expected);
+    return (K)0;
   }
-  resetsz();
+
+  // Don't use MSG_WAITALL since async sd1(-fd, ...) was used.  So call recv until we have 
+  // the expected number of bytes otherwise the message sequencing can get out of step.
+  long actual;
+  char* body = malloc(expected);
+  for (rc = 0, actual = 0;
+       actual < expected && rc >= 0;
+       actual += rc = recv(fd, body + actual, expected - actual, 0));
+
+  if (rc < 0)
+    fprintf(stderr, "recv(2) error: %li, expected: %li, actual: %li\n", rc, expected, actual);
+  else{
+    switch (cb_hdr.header.msg_type){
+      case MSG_TYPE_SEND:
+        qmsgsent(body, actual);
+        break;
+      case MSG_TYPE_RCVD:
+        qmsgrcvd(body, actual);
+        break;
+      case MSG_TYPE_DISCONN:
+        qdisconn(body, actual);
+        break;
+      default:
+        fprintf(stderr, "mqttCallback - invalid callback type: %u\n", cb_hdr.header.msg_type);
+    }
+  }
+
+  free(body);
   return (K)0;
 }
 
 static void detach(void){
- int sp;
- if((sp=spair[0])){
-  sd0x(sp,0);
-  close(sp);
- }
- if((sp=spair[1]))
-  close(sp);
- spair[0]=0;
- spair[1]=0;
- validinit=0;
+  int sp;
+  if((sp=spair[0])){
+    sd0x(sp,0);
+    close(sp);
+  }
+  if((sp=spair[1]))
+    close(sp);
+  spair[0]=0;
+  spair[1]=0;
+  validinit=0;
 }
 
 EXP K init(K UNUSED(X)){
   if(!(0==validinit))
-   return 0;
+    return 0;
   if(dumb_socketpair(spair,1) == SOCKET_ERROR){
-   fprintf(stderr,"Init failed. socketpair: %s\n", strerror(errno));
-  return 0;
+    fprintf(stderr,"Init failed. socketpair: %s\n", strerror(errno));
+    return 0;
   }
-  resetsz();
-  pr0(sd1(-spair[0], &mqttCallback));
+  // Have to use (0 - fd) rather than simple negate, since SOCKET on Windows is unsigned ptr.
+  pr0(sd1(0 - spair[0], &mqttCallback));
   validinit = 1;
   atexit(detach);
   return 0;
