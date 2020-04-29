@@ -90,9 +90,9 @@ Two methods are provided to allow users to build a Windows version of this repos
 
 Basic q producer and receiver examples are available in the `examples` subdirectory, which connect to the MQTT broker at the default port 1883.
 
-It is assumed that the user has installed the `mqtt.so/mqtt.dll` binary in `QHOME/<QARCH>`.
+It is assumed that the user has installed the `mqtt.so` or `mqtt.dll` binary in `$QHOME/<arch>`.
 
-You can install a local MQTT instance from Mosquitto by following the instructions [here]((https://mosquitto.org/download/), This can be connected to locally or from a docker container (updating the connection address as appropriate).
+You can install a local MQTT instance from Mosquitto by following the instructions [here](https://mosquitto.org/download/). This can be connected to locally or from a docker container (updating the connection address as appropriate).
 
 The following shows the initialization of the example script and expected output.
 
@@ -135,7 +135,7 @@ Documentation outlining the functionality available for this interface can be fo
 
 ## Status
 
-The mqtt interface is still in developement and is provided here as a beta release under an Apache 2.0 license.
+The mqtt interface is still in development and is provided here as a beta release under an Apache 2.0 license.
 
 If you find issues with the interface or have feature requests please consider raising an issue [here](https://github.com/KxSystems/mqtt/issues).
 

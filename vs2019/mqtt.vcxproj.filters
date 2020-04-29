@@ -16,11 +16,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\mqtt.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\examples\producer.q">
       <Filter>examples</Filter>
     </None>
@@ -46,5 +41,10 @@
     <None Include="..\examples\symlink_paho.bat">
       <Filter>examples</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\mqtt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

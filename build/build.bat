@@ -24,7 +24,7 @@ cl /LD /DKXVER=3 /DWIN32 /I%PAHO_MQTT_INCLUDE% /Femqtt.dll /O2 ../src/mqtt.c ../
 set LIB=%OLDLIB%
 set PATH=%OP%
 
-CALL ..\vs2019\mqtt_install.bat mqtt.dll
+CALL ..\vs2019\mqtt_install.bat mqtt.dll w64
 
 ENDLOCAL
 exit /b 0

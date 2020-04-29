@@ -150,21 +150,18 @@ EXP K unsub(K topic){
 }
 
 // Callback data structure
-struct CallbackDataStr
-{
-    union
-    {
-        char reserved[8];   // reserve space for flags, aligned to 64 bit word
-        enum
-        {
-            MSG_TYPE_SEND = 9876,   // arbitrary uncommon value
-            MSG_TYPE_RCVD,
-            MSG_TYPE_DISCONN
-        } msg_type;
-    } header;
+struct CallbackDataStr{
+  union{
+    char reserved[8];   // reserve space for flags, aligned to 64 bit word
+    enum{
+      MSG_TYPE_SEND = 9876,   // arbitrary uncommon value
+      MSG_TYPE_RCVD,
+      MSG_TYPE_DISCONN
+    } msg_type;
+  } header;
 
-    long body_size;
-    // Start of dynamic data
+  long body_size;
+  // Start of dynamic data
 };
 typedef struct CallbackDataStr CallbackData;
 
@@ -221,7 +218,7 @@ static void pr0(K x){
 // Callback function definitions
 void qmsgsent(char* p,long sz){
   (void)sz;
-  K dt = kj(*(long*)p);
+  K dt = kj(*(MQTTClient_deliveryToken*)p);
   pr0(k(0, (char*)".mqtt.msgsent", dt, (K)0));
 }
 
@@ -244,67 +241,64 @@ void qdisconn(char* p,long sz){
  * detach function initialized at exit, socketpair start issues handled
  * callback function set to loop on socketpair connection
 */
-K mqttCallback(int fd)
-{
-    CallbackData cb_hdr;
-    long rc = recv(fd, (char*)&cb_hdr, sizeof(cb_hdr), 0);
-    const long expected = cb_hdr.body_size;
-    if (rc < (long)sizeof(cb_hdr) || expected < 0)
-    {
-        fprintf(stderr, "recv(1) error: %li, expected: %li\n", rc, expected);
-        return (K)0;
-    }
-
-    // Don't use MSG_WAITALL since async sd1(-fd, ...) was used.  So call recv until we have 
-    // the expected number of bytes otherwise the message sequencing can get out of step.
-    long actual;
-    char* body = malloc(expected);
-    for (rc = 0, actual = 0;
-         actual < expected && rc >= 0;
-         actual += rc = recv(fd, body + actual, expected - actual, 0));
-
-    if (rc < 0)
-        fprintf(stderr, "recv(2) error: %li, expected: %li, actual: %li\n", rc, expected, actual);
-    else
-    {
-        switch (cb_hdr.header.msg_type) {
-        case MSG_TYPE_SEND:
-            qmsgsent(body, actual);
-            break;
-        case MSG_TYPE_RCVD:
-            qmsgrcvd(body, actual);
-            break;
-        case MSG_TYPE_DISCONN:
-            qdisconn(body, actual);
-            break;
-        default:
-            fprintf(stderr, "mqttCallback - invalid callback type: %u\n", cb_hdr.header.msg_type);
-        }
-    }
-
-    free(body);
+K mqttCallback(int fd){
+  CallbackData cb_hdr;
+  long rc = recv(fd, (char*)&cb_hdr, sizeof(cb_hdr), 0);
+  const long expected = cb_hdr.body_size;
+  if (rc < (long)sizeof(cb_hdr) || expected < 0){
+    fprintf(stderr, "recv(1) error: %li, expected: %li\n", rc, expected);
     return (K)0;
+  }
+
+  // Don't use MSG_WAITALL since async sd1(-fd, ...) was used.  So call recv until we have 
+  // the expected number of bytes otherwise the message sequencing can get out of step.
+  long actual;
+  char* body = malloc(expected);
+  for (rc = 0, actual = 0;
+       actual < expected && rc >= 0;
+       actual += rc = recv(fd, body + actual, expected - actual, 0));
+
+  if (rc < 0)
+    fprintf(stderr, "recv(2) error: %li, expected: %li, actual: %li\n", rc, expected, actual);
+  else{
+    switch (cb_hdr.header.msg_type){
+      case MSG_TYPE_SEND:
+        qmsgsent(body, actual);
+        break;
+      case MSG_TYPE_RCVD:
+        qmsgrcvd(body, actual);
+        break;
+      case MSG_TYPE_DISCONN:
+        qdisconn(body, actual);
+        break;
+      default:
+        fprintf(stderr, "mqttCallback - invalid callback type: %u\n", cb_hdr.header.msg_type);
+    }
+  }
+
+  free(body);
+  return (K)0;
 }
 
 static void detach(void){
- int sp;
- if((sp=spair[0])){
-  sd0x(sp,0);
-  close(sp);
- }
- if((sp=spair[1]))
-  close(sp);
- spair[0]=0;
- spair[1]=0;
- validinit=0;
+  int sp;
+  if((sp=spair[0])){
+    sd0x(sp,0);
+    close(sp);
+  }
+  if((sp=spair[1]))
+    close(sp);
+  spair[0]=0;
+  spair[1]=0;
+  validinit=0;
 }
 
 EXP K init(K UNUSED(X)){
   if(!(0==validinit))
-   return 0;
+    return 0;
   if(dumb_socketpair(spair,1) == SOCKET_ERROR){
-   fprintf(stderr,"Init failed. socketpair: %s\n", strerror(errno));
-  return 0;
+    fprintf(stderr,"Init failed. socketpair: %s\n", strerror(errno));
+    return 0;
   }
   // Have to use (0 - fd) rather than simple negate, since SOCKET on Windows is unsigned ptr.
   pr0(sd1(0 - spair[0], &mqttCallback));
