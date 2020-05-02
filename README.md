@@ -92,7 +92,7 @@ Basic q producer and receiver examples are available in the `examples` subdirect
 
 It is assumed that the user has installed the `mqtt.so` or `mqtt.dll` binary in `QHOME/<QARCH>`.
 
-You can install a local MQTT instance from Mosquitto by following the instructions [here]((https://mosquitto.org/download/). This can be connected to locally or from a docker container (updating the connection address as appropriate).
+You can install a local MQTT instance from Mosquitto by following the instructions [here](https://mosquitto.org/download/). This can be connected to locally or from a docker container (updating the connection address as appropriate).
 
 The following shows the initialization of the example script and expected output.
 
