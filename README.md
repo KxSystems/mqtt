@@ -90,7 +90,7 @@ Two methods are provided to allow users to build a Windows version of this repos
 
 Basic q producer and receiver examples are available in the `examples` subdirectory, which connect to the MQTT broker at the default port 1883.
 
-It is assumed that the user has installed the `mqtt.so` or `mqtt.dll` binary in `QHOME/<QARCH>`.
+It is assumed that the user has installed the `mqtt.so` or `mqtt.dll` binary in `$QHOME/[wlm](32/64)`.
 
 You can install a local MQTT instance from Mosquitto by following the instructions [here](https://mosquitto.org/download/). This can be connected to locally or from a docker container (updating the connection address as appropriate).
 
