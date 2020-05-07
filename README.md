@@ -15,63 +15,52 @@ See [code.kx.com/q/interfaces/mqtt](https://code.kx.com/q/interfaces/mqtt) for f
 - kdb+ ≥ 3.5 64-bit(Linux/MacOS/Windows) and 32-bit Arm
 - [paho.mqtt.c](https://github.com/eclipse/paho.mqtt.c) ≥ 1.3.2 
 
+## Installation
 
-## Build Instructions
+The following steps will allow a user to install both the required paho mqtt eclipse c api and the kdb+ interface.
 
-The following steps will allow a user to build both the required mqtt eclipse c api and the kdb+ interface.
+### Third-Party Library Installation
 
-### General
+#### Linux/MacOS/Windows 64-bit
 
-Install the latest version of `paho.mqtt.c` and follow the instructions build instructions for your system architecture [here](https://github.com/eclipse/paho.mqtt.c#build-instructions-for-gnu-make).
+Linux, MacOS and Windows users should complete the following steps
 
-### Linux/MacOS
+1. Download the latest release of the `paho.mqtt.c` C api for MQTT available [here](https://github.com/eclipse/paho.mqtt.c/releases) for your system architecture.
+2. Unzip this release and move to a location appropriate for your system.
+3. Set an environment variable `$PAHO_HOME/%PAHO_HOME%` which points to the location of the installed and unzipped release.
 
-It is currently required that the `paho.mqtt.c` library be compiled and installed, this is completed as follows
+#### ARM 32 build
 
-```
-// Clone the repository
-$git clone https://github.com/eclipse/paho.mqtt.c
-// move into relevant directory
-$cd paho.mqtt.c
-// Compile the library
-$make
-// install the library
-$ make install
-```
+For 32-bit arm builds there is currently no prebuilt releases available, as such a user is required to build the interface paho C api from source following the instructions [here](https://github.com/eclipse/paho.mqtt.c/blob/master/README.md#cross-compilation)
 
-**Note**
+### Interface build and install
 
-*  Building using the instructions outlined in the above link will produce the appropriate shared objects, these must be renamed using the following commands to remove the trailing `.x` where `.x` is the minor version number. This is a current limitation of the build process as outlined [here](https://github.com/eclipse/paho.mqtt.cpp/issues/150#issuecomment-383336429).
+#### Linux/MacOS/Arm 32-bit
 
-```
-$ mv /usr/local/lib/libpaho-mqtt3a.so.1.x /usr/local/lib/libpaho-mqtt3a.so.1
-$ mv /usr/local/lib/libpaho-mqtt3as.so.1.x /usr/local/lib/libpaho-mqtt3as.so.1
-$ mv /usr/local/lib/libpaho-mqtt3c.so.1.x /usr/local/lib/libpaho-mqtt3c.so.1
-$ mv /usr/local/lib/libpaho-mqtt3cs.so.1.x /usr/local/lib/libpaho-mqtt3cs.so.1
-```
+In order to successfully build and install this interface the following environment variables must be set
 
-**Build shared objects and install**
+1. PAHO_HOME = Location of a paho mqtt C api release
+2. QHOME = Location of the q executable
 
-Compile and install a shared object file for mqtt
-
-Please ensure that you have `PAHO_HOME` set as an environment variable, this should be the location of the git repository as installed above.
+* Create the interface shared object
 
 ```bash
-// produce the shared object
-$make
-// copy shared object to `$QHOME/<arch>`
-$make install
-// remove shared object from build location
-$make clean
+make
 ```
 
-### Docker - Linux
+* Copy the shared object to $QHOME/[ml](64|32)
 
-A sample docker file is provided in the `docker_linux` directory to create a CentOS 7 environment with both the kdb+ `mqtt` interface and `paho.mqtt.c` api built and installed.
+```bash
+make install
+```
 
-The source directories are specified at the top of `mqtt_build.bat` which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the libraries.
+* Remove the shared object from the build location
 
-### Windows
+```bash
+make clean
+```
+
+#### Windows
 
 Two methods are provided to allow users to build a Windows version of this repository
 
@@ -86,11 +75,17 @@ Two methods are provided to allow users to build a Windows version of this repos
 
 - The script `build/build.bat` allows a user to install from command line. In order to ensure that the install is successful please modify the `MSVC` and `paho.mqtt.c` directories at the top of this file to support your environment.
 
+#### Docker - Linux
+
+A sample docker file is provided in the `docker_linux` directory to create a CentOS 7 environment with both the kdb+ `mqtt` interface and `paho.mqtt.c` api built and installed.
+
+The source directories are specified at the top of `mqtt_build.bat` which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the libraries.
+
 ## Examples
 
-Basic q producer and receiver examples are available in the `examples` subdirectory, which connect to the MQTT broker at the default port 1883.
+Basic q producer and receiver examples are available in the `examples` subdirectory, which connect to the MQTT broker at the Mosquitto brokers default port 1883.
 
-It is assumed that the user has installed the `mqtt.so` or `mqtt.dll` binary in `$QHOME/[wlm](32/64)`.
+It is assumed that the user has installed the `mqtt.so` or `mqtt.dll` binary in `$QHOME/[wlm](32|64)`.
 
 You can install a local MQTT instance from Mosquitto by following the instructions [here](https://mosquitto.org/download/). This can be connected to locally or from a docker container (updating the connection address as appropriate).
 

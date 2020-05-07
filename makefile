@@ -5,8 +5,8 @@ ifndef PAHO_HOME
   $(error PAHO_HOME must be set to the location of your cloned and installed paho.mqtt.c repository)
 endif
 
-PAHO_LIB=$(PAHO_HOME)/build/output
-PAHO_SRC=$(PAHO_HOME)/src
+PAHO_LIB=$(PAHO_HOME)/lib
+PAHO_SRC=$(PAHO_HOME)/include
 
 MS      = $(shell getconf LONG_BIT)
 W_OPTS  = -Wall -Wno-strict-aliasing -Wno-parentheses -Wextra -Werror -Wsign-compare
