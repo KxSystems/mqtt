@@ -2,8 +2,8 @@
 
 .mqtt.msgrcvd:{cbfn[x;y];0N!"Message received"}
 
-//.mqtt.conn[`$"tcp://host.docker.internal:1883";`rcv];
-.mqtt.conn[`$"tcp://localhost:1883";`rcv];
+//.mqtt.conn[`$"tcp://host.docker.internal:1883";`rcv;()!()];
+.mqtt.conn[`$"tcp://localhost:1883";`rcv;()!()];
 .mqtt.sub[`topic1];
 .mqtt.sub[`topic2];
 
