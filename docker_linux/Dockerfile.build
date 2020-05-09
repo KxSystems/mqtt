@@ -17,6 +17,7 @@ RUN mkdir -p /q
 ENV QHOME /q
 ENV PATH /q/l64:$PATH
 ENV LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH
+ENV PAHO_HOME=/source/mqtt
 
 COPY mqtt_build.sh /source
 RUN dos2unix /source/mqtt_build.sh

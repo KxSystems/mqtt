@@ -1,11 +1,13 @@
 SETLOCAL
 
+SET QARCH=%2
+
 SET ERROR=0
 IF NOT DEFINED QHOME (
     ECHO QHOME is not set
     SET ERROR=1
 )
-IF NOT DEFINED QARCH (
+IF ["%QARCH%"]==[""] (
     ECHO QARCH is not set
     SET ERROR=2
 )
