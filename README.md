@@ -20,7 +20,7 @@ This protocol is used commonly for constrained devices with low-bandwidth, high-
 
 ## Installation
 
-**Requirements**
+### Requirements
 
 * kdb+ ≥ 3.5 64-bit(Linux/MacOS/Windows) and 32-bit Arm
 * [paho.mqtt.c](https://github.com/eclipse/paho.mqtt.c) ≥ 1.3.2
@@ -31,22 +31,22 @@ This protocol is used commonly for constrained devices with low-bandwidth, high-
 
 Linux, MacOS and Windows users should complete the following steps
 
-1. Download the latest release of the `paho.mqtt.c` C api for MQTT available [here](https://github.com/eclipse/paho.mqtt.c/releases) for your system architecture.
+1. Download the latest release of the `paho.mqtt.c` C api for your system architecture, available [here](https://github.com/eclipse/paho.mqtt.c/releases).
 2. Unzip this release and move to a location appropriate for your system.
-3. Set an environment variable `$PAHO_HOME/%PAHO_HOME%` which points to the location of the installed and unzipped release.
+3. Set an environment variable `$PAHO_HOME/%PAHO_HOME%` pointing to the location of the installed and unzipped release.
 
 #### ARM 32 build
 
-For 32-bit arm builds there is currently no prebuilt releases available, as such a user is required to build the PAHO C api from source following the instructions [here](https://github.com/eclipse/paho.mqtt.c/blob/master/README.md#cross-compilation)
+For 32-bit arm systems, there are currently no prebuilt releases available. As such, a user is required to build the PAHO C api from source following the instructions [here](https://github.com/eclipse/paho.mqtt.c/blob/master/README.md#cross-compilation).
 
 ### Interface build and install
 
 #### Linux/MacOS/Arm 32-bit
 
-In order to successfully build and install this interface the following environment variables must be set
+In order to successfully build and install this interface, the following environment variables must be set
 
 1. `PAHO_HOME` = Location of a paho mqtt C api release
-2. `QHOME` = Location of the q executable
+2. `QHOME` = Q installation directory (directory containing `q.k`)
 
 * Create the interface shared object
 
@@ -68,10 +68,10 @@ make clean
 
 #### Windows
 
-Two methods are provided to allow users to build a Windows version of this repository
+Two methods are provided for building a Windows version of this interface
 
 1. A VS2019 solution is provided in the subdirectory `vs2019` to build mqtt for x64 Windows.
-2. The script `builds/build.bat` allows for build to be initialised from command line
+2. The script `builds/build.bat` allows for build to be initialized from command line
 
 **Visual Studio 2019**
 
@@ -85,7 +85,7 @@ Two methods are provided to allow users to build a Windows version of this repos
 
 A sample docker file is provided in the `docker_linux` directory to create a CentOS 7 environment with both the kdb+ `mqtt` interface and `paho.mqtt.c` api built and installed.
 
-The source directories are specified at the top of `mqtt_build.bat` which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the libraries.
+The source directories are specified at the top of `mqtt_build.bat`, which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the libraries.
 
 ## Documentation
 
@@ -95,6 +95,6 @@ Documentation outlining the functionality available for this interface can be fo
 
 The mqtt interface is still in development and is provided here as a beta release under an Apache 2.0 license.
 
-If you find issues with the interface or have feature requests please consider raising an issue [here](https://github.com/KxSystems/mqtt/issues).
+If you find issues with the interface or have feature requests, please consider raising an issue [here](https://github.com/KxSystems/mqtt/issues).
 
-If you wish to contribute to this project please follow the contributing guide [here](CONTRIBUTING.md).
+If you wish to contribute to this project, please follow the contributing guide [here](CONTRIBUTING.md).
