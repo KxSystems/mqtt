@@ -18,9 +18,6 @@ Message Queueing Telemetry Transport(MQTT) is a machine-to-machine/IOT connectiv
 
 This protocol is used commonly forr constrained devices with low-bandwidth, high-latency or unreliable networks.
 
-- kdb+ ≥ 3.5 64-bit(Linux/MacOS/Windows) and 32-bit Arm
-- [paho.mqtt.c](https://github.com/eclipse/paho.mqtt.c) ≥ 1.3.2 
-
 ## Installation
 
 **Requirements**
