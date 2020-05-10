@@ -37,7 +37,7 @@ Linux, MacOS and Windows users should complete the following steps
 
 #### ARM 32 build
 
-For 32-bit arm builds there is currently no prebuilt releases available, as such a user is required to build the interface paho C api from source following the instructions [here](https://github.com/eclipse/paho.mqtt.c/blob/master/README.md#cross-compilation)
+For 32-bit arm builds there is currently no prebuilt releases available, as such a user is required to build the PAHO C api from source following the instructions [here](https://github.com/eclipse/paho.mqtt.c/blob/master/README.md#cross-compilation)
 
 ### Interface build and install
 
@@ -45,8 +45,8 @@ For 32-bit arm builds there is currently no prebuilt releases available, as such
 
 In order to successfully build and install this interface the following environment variables must be set
 
-1. PAHO_HOME = Location of a paho mqtt C api release
-2. QHOME = Location of the q executable
+1. `PAHO_HOME` = Location of a paho mqtt C api release
+2. `QHOME` = Location of the q executable
 
 * Create the interface shared object
 
@@ -54,7 +54,7 @@ In order to successfully build and install this interface the following environm
 make
 ```
 
-* Copy the shared object to $QHOME/[ml](64|32)
+* Copy the shared object to `$QHOME/[ml](64|32)`
 
 ```bash
 make install
