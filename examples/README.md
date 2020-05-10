@@ -1,12 +1,16 @@
-# Examples
+# kdb+ interface for MQTT (Examples)
 
-Basic q producer and receiver examples are available in the `examples` subdirectory, which connect to the MQTT broker at the Mosquitto brokers default port 1883.
+The demonstration documented below provides users with a simple example use case for the interfacing of kdb+ with the MQTT messaging protocol.
+
+## Requirements
 
 It is assumed that the user has installed the `mqtt.so` or `mqtt.dll` binary in `$QHOME/[wlm](32|64)` following the instructions outlined [here](../README.md)
 
-You can install a local MQTT instance from Mosquitto by following the instructions [here](https://mosquitto.org/download/). This can be connected to locally or from a docker container (updating the connection address as appropriate).
+This demonstration requires that a MQTT broker is running on port 1883. This is the default running port for a Mosquitto broker running locally. You can install a local MQTT instance from Mosquitto by following the instructions [here](https://mosquitto.org/download/). This can be connected to locally or from a docker container (updating the connection address as appropriate).
 
-The following shows the initialization of the example script and expected output.
+## Example
+
+* The following shows the initialization of the example script and expected output.
 
 ```
 $q producer.q
@@ -22,10 +26,11 @@ q)(`msgsent;1)
 q)\t 0
 ```
 
-The following code block shows the expected behaviour when a consumer is listening to the port supplied by the above producer
+* The following code block shows the expected behaviour when a consumer is listening to the port supplied by the above producer using the `consumer.q` script
 
 ```
 $q consumer.q
+
 q)"Message received"
 "Message received"
 "Message received"
