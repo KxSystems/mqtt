@@ -41,6 +41,22 @@ static void msgsent(void *context, MQTTClient_deliveryToken dt);
 static int msgrcvd(void *context, char* topic, int unused, MQTTClient_message *msg);
 static void disconn(void *context, char* cause);
 
+static char* getStringFromList(K propValues,int row)
+{
+  if (propValues->t == KS)
+    return kS(propValues)[row];
+  else
+    return kK(propValues)[row]->s;
+}
+
+static int getIntFromList(K propValues,int row)
+{
+  if (propValues->t == KI)
+    return kI(propValues)[row];
+  else
+    return kK(propValues)[row]->i;
+}
+
 /* Establish a tcp connection from a q process to mqtt client
  * tcpconn = tcp connection being connected to (symbol)
  * pname   = name to be associated with the connecting process (symbol)
@@ -58,8 +74,6 @@ EXP K conn(K tcpconn,K pname, K opt){
   if(MQTTCLIENT_SUCCESS != (err = MQTTClient_create(&client, tcpconn->s, pname->s, MQTTCLIENT_PERSISTENCE_NONE, NULL)))
     return krr((S)MQTTClient_strerror(err));
   MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
-  conn_opts.keepAliveInterval = 20;
-  conn_opts.cleansession = 1;
 
   char* username = 0;
   char* password = 0;
@@ -70,15 +84,34 @@ EXP K conn(K tcpconn,K pname, K opt){
     int row = 0;
     for (;row<propNames->n;++row)
     {
-        if (strcmp(kS(propNames)[row],"username")==0)
-          username = strdup(kS(propValues)[row]);
-        else if (strcmp(kS(propNames)[row],"password")==0)
-          password = strdup(kS(propValues)[row]);
+      if (strcmp(kS(propNames)[row],"username")==0)
+      {
+        username = strdup(getStringFromList(propValues,row));
+        conn_opts.username = username;
+      }
+      else if (strcmp(kS(propNames)[row],"password")==0)
+      {
+        password = strdup(getStringFromList(propValues,row));
+        conn_opts.password = password;
+      }
+      else if (strcmp(kS(propNames)[row],"keepAliveInterval")==0)
+        conn_opts.keepAliveInterval = getIntFromList(propValues,row);
+      else if (strcmp(kS(propNames)[row],"cleansession")==0)
+        conn_opts.cleansession = getIntFromList(propValues,row);
+      else if (strcmp(kS(propNames)[row],"reliable")==0)
+        conn_opts.reliable = getIntFromList(propValues,row);
+      else if (strcmp(kS(propNames)[row],"connectTimeout")==0)
+        conn_opts.connectTimeout = getIntFromList(propValues,row);
+      else if (strcmp(kS(propNames)[row],"retryInterval")==0)
+        conn_opts.retryInterval = getIntFromList(propValues,row);
+      else if (strcmp(kS(propNames)[row],"MQTTVersion")==0)
+        conn_opts.MQTTVersion = getIntFromList(propValues,row);
+      else if (strcmp(kS(propNames)[row],"maxInflightMessages")==0)
+        conn_opts.maxInflightMessages = getIntFromList(propValues,row);
+      else if (strcmp(kS(propNames)[row],"cleanstart")==0)
+        conn_opts.cleanstart = getIntFromList(propValues,row);
     }
   }
-  conn_opts.username = username;
-  conn_opts.password = password;
-
   MQTTClient_setCallbacks(client, NULL, disconn, msgrcvd, msgsent);
   err = MQTTClient_connect(client, &conn_opts);
   free(username);
