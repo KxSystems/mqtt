@@ -156,8 +156,8 @@
     <None Include="..\examples\receiver.q" />
     <None Include="..\examples\symlink_paho.bat" />
     <None Include="..\makefile" />
-    <None Include="..\mqtt.q" />
     <None Include="..\README.md" />
+    <None Include="..\script\mqtt.q" />
     <None Include="mqtt_install.bat" />
   </ItemGroup>
   <ItemGroup>

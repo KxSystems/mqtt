@@ -14,6 +14,9 @@
     <Filter Include="build">
       <UniqueIdentifier>{c02ba723-9ac8-41d6-978c-d90536fbd1d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="script">
+      <UniqueIdentifier>{d334afca-8006-4391-88d6-aac5477d9a77}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\examples\producer.q">
@@ -35,11 +38,13 @@
       <Filter>build</Filter>
     </None>
     <None Include="..\makefile" />
-    <None Include="..\mqtt.q" />
     <None Include="..\README.md" />
     <None Include="mqtt_install.bat" />
     <None Include="..\examples\symlink_paho.bat">
       <Filter>examples</Filter>
+    </None>
+    <None Include="..\script\mqtt.q">
+      <Filter>script</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
