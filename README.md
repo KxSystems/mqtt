@@ -16,7 +16,7 @@ Kdb+ is the world's fastest time-series database, optimized for ingesting, analy
 
 Message Queueing Telemetry Transport(MQTT) is a machine-to-machine/IOT connectivity protocol. It is designed to be lightweight offering functionality for publish/subscribe messaging transport.
 
-This protocol is used commonly forr constrained devices with low-bandwidth, high-latency or unreliable networks.
+This protocol is used commonly for constrained devices with low-bandwidth, high-latency or unreliable networks.
 
 ## Installation
 
