@@ -44,21 +44,46 @@ static void disconn(void *context, char* cause);
 /* Establish a tcp connection from a q process to mqtt client
  * tcpconn = tcp connection being connected to (symbol)
  * pname   = name to be associated with the connecting process (symbol)
+ * opt     = connection options (dict - keys 'username' and 'password' currently supported as symbol types)
 */
-EXP K conn(K tcpconn,K pname){
+EXP K conn(K tcpconn,K pname, K opt){
   int err;
   if(tcpconn->t != -KS)
     return krr("addr type");
   if(pname->t != -KS)
     return krr("client type");
+  if(opt && opt->t != XD)
+    return krr("options");
   client = 0;
   if(MQTTCLIENT_SUCCESS != (err = MQTTClient_create(&client, tcpconn->s, pname->s, MQTTCLIENT_PERSISTENCE_NONE, NULL)))
     return krr((S)MQTTClient_strerror(err));
   MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
   conn_opts.keepAliveInterval = 20;
   conn_opts.cleansession = 1;
+
+  char* username = 0;
+  char* password = 0;
+  if (opt && opt->t == XD && opt->n==2)
+  {
+    K propNames = (kK(opt)[0]);
+    K propValues = (kK(opt)[1]);
+    int row = 0;
+    for (;row<propNames->n;++row)
+    {
+        if (strcmp(kS(propNames)[row],"username")==0)
+          username = strdup(kS(propValues)[row]);
+        else if (strcmp(kS(propNames)[row],"password")==0)
+          password = strdup(kS(propValues)[row]);
+    }
+  }
+  conn_opts.username = username;
+  conn_opts.password = password;
+
   MQTTClient_setCallbacks(client, NULL, disconn, msgrcvd, msgsent);
-  if(MQTTCLIENT_SUCCESS != (err = MQTTClient_connect(client, &conn_opts)))
+  err = MQTTClient_connect(client, &conn_opts);
+  free(username);
+  free(password);
+  if(MQTTCLIENT_SUCCESS != err)
     return krr((S)MQTTClient_strerror(err));
   return (K)0;
 }
