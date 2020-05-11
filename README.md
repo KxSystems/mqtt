@@ -62,8 +62,6 @@ make install
 
 * Remove the shared object from the build location
 
-Please ensure that you have "PAHO_HOME" set as an environment variable, this should be the location of the git repository installed above.
-
 ```bash
 make clean
 ```
@@ -88,70 +86,6 @@ Two methods are provided for building a Windows version of this interface
 A sample docker file is provided in the `docker_linux` directory to create a CentOS 7 environment with both the kdb+ `mqtt` interface and `paho.mqtt.c` api built and installed.
 
 The source directories are specified at the top of `mqtt_build.bat`, which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the libraries.
-
-### Docker - Linux
-
-Samples docker files are provided in the `docker_linux` directory to create a Centos environment with both `mqtt` and `paho.mqtt.c` installed
-
-The source directories are specified at the top of `mqtt_build.bat` which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the libraries.
-
-### Windows
-
-Two methods are provided to allow users to build a Windows version of this repository
-
-1. A VS2019 solution is provided in the directory `vs2019` to build mqtt for x64 Windows.
-2. The script `builds/build.bat` allows for build to be initialised from command line
-
-#### Visual Studio 2019
-
-- This assumes that `mqtt`, `paho.mqtt.c` and `kdb` (downloaded from [here](https://github.com/kxsystems/kdb)) have been installed at the same directory level with `paho.mqtt.c` being built using `cbuild.bat`, located in the root of the`paho.mqtt.c` repository.  These can be changed by updating the Include and Library directories in the project.
-
-#### Command line
-
-- The script `build/build.bat` allows a user to install from command line. In order to ensure that the install is successful please modify the `MSVC` and `paho.mqtt.c` directories at the top of this file to support your environment.
-
-## Examples
-
-Basic q producer and receiver examples are available in the `examples` subdirectory, which connect to the MQTT broker at the default port 1883.
-
-It is assumed that the user has installed the `mqtt.so` or `mqtt.dll` binary in `$QHOME/<arch>`.
-
-You can install a local MQTT instance from Mosquitto by following the instructions [here](https://mosquitto.org/download/). This can be connected to locally or from a docker container (updating the connection address as appropriate).
-
-The following shows the initialization of the example script and expected output.
-
-```
-$q producer.q
-
-Type `\t 100` to publish a message every 100ms up to 200 messages, to stop type `\t 0`
-q)\t 100
-q)(`msgsent;1)
-(`msgsent;2)
-(`msgsent;3)
-(`msgsent;4)
-
-// Stop the producer
-q)\t 0
-```
-
-The following code block shows the expected behaviour when a consumer is listening to the port supplied by the above producer
-
-```
-$q consumer.q
-q)"Message received"
-"Message received"
-"Message received"
-"Message received"
-
-// Interrogate the table being serviced by the example script
-q).mqtt.tab
-topic  msg_sent                      msg_recv                      received_m..
------------------------------------------------------------------------------..
-topic1 2020.04.24D09:03:06.719866000 2020.04.24D09:03:06.721215000 topic1_0  ..
-topic2 2020.04.24D09:03:06.720178000 2020.04.24D09:03:06.824406000 topic2_0  ..
-topic1 2020.04.24D09:03:06.823581000 2020.04.24D09:03:06.924166000 topic1_1  ..
-topic2 2020.04.24D09:03:06.923756000 2020.04.24D09:03:07.025692000 topic2_1  ..
-```
 
 ## Documentation
 
