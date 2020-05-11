@@ -27,7 +27,7 @@ jobs:
       deploy:
         provider: releases
         api_key:
-          secure: cNdATvJmeCHIyoxVf6Hx6YWknl4Zk1880dke/8MvrL+eKfdGMLYliEfqGIwIpWUVbUv0E7F0kgOJH+wJm0VeHBSbhYVXaGP6+FSRA0q9on87/PHD2aJANbNu+ayJZGBRA7HJwv3Gi9cyQQPJyFt4lz5XqDmuA7WihM69nekvlnU/JjDDaoCidYvhzxkTvRqji7CsnqFkJvJNLrw9YbZf7CB/yBRBEKGgEV0bHQ4dSxIpAoTILziUgI3ys0RSIOJ9y+f1zNZyTyUpxhfvkogxcOT+9N/jbxwix93mF/IuZ1Crymsbt4SgXpeDZtj73Nf++eSMspnZQi7DvMTu5oLEGRrbb60XMOE3Ih9NiidOpcRC8uMPchb1ZAT8xrswtTlD3SX97de70UJbdNnU4AbRnBSb7D/ah5kZxz4L+U9RhuADlmGTooRx5rLMI9BSnU65Ibxct5DcE4cgyxOAipiYOmIL2uuk/XFeZXXpumCcObX3tKmZCZSS+a3A/Uwwy4MdBRzFhMiSYnfNgcysw7br3gRUqlrc0k4TW+gneHpI3cpyV0/BQGgQkAVfRzlXC0wEAhwllRK6f48nt8PH+Bhd8JFtS/Sq9RsDr4IIstqKPNvWl/xv+6SlaFMYEd5/qRGyU/Z0ViUZVjgecQ0REcNIq837ZSywOj5YXXI8EWtRfpk=
+          secure: $GITHUB_APIKEY
         file: mqtt-${TRAVIS_OS_NAME}-${TRAVIS_TAG}.tar.gz
         on:
           tags: true
@@ -52,7 +52,7 @@ jobs:
       deploy:
         provider: releases
         api_key:
-          secure: cNdATvJmeCHIyoxVf6Hx6YWknl4Zk1880dke/8MvrL+eKfdGMLYliEfqGIwIpWUVbUv0E7F0kgOJH+wJm0VeHBSbhYVXaGP6+FSRA0q9on87/PHD2aJANbNu+ayJZGBRA7HJwv3Gi9cyQQPJyFt4lz5XqDmuA7WihM69nekvlnU/JjDDaoCidYvhzxkTvRqji7CsnqFkJvJNLrw9YbZf7CB/yBRBEKGgEV0bHQ4dSxIpAoTILziUgI3ys0RSIOJ9y+f1zNZyTyUpxhfvkogxcOT+9N/jbxwix93mF/IuZ1Crymsbt4SgXpeDZtj73Nf++eSMspnZQi7DvMTu5oLEGRrbb60XMOE3Ih9NiidOpcRC8uMPchb1ZAT8xrswtTlD3SX97de70UJbdNnU4AbRnBSb7D/ah5kZxz4L+U9RhuADlmGTooRx5rLMI9BSnU65Ibxct5DcE4cgyxOAipiYOmIL2uuk/XFeZXXpumCcObX3tKmZCZSS+a3A/Uwwy4MdBRzFhMiSYnfNgcysw7br3gRUqlrc0k4TW+gneHpI3cpyV0/BQGgQkAVfRzlXC0wEAhwllRK6f48nt8PH+Bhd8JFtS/Sq9RsDr4IIstqKPNvWl/xv+6SlaFMYEd5/qRGyU/Z0ViUZVjgecQ0REcNIq837ZSywOj5YXXI8EWtRfpk=
+          secure: $GITHUB_APIKEY
         file: mqtt-${TRAVIS_OS_NAME}-${TRAVIS_TAG}.tar.gz
         on:
           tags: true
@@ -79,7 +79,7 @@ jobs:
       deploy:
         provider: releases
         api_key:
-          secure: cNdATvJmeCHIyoxVf6Hx6YWknl4Zk1880dke/8MvrL+eKfdGMLYliEfqGIwIpWUVbUv0E7F0kgOJH+wJm0VeHBSbhYVXaGP6+FSRA0q9on87/PHD2aJANbNu+ayJZGBRA7HJwv3Gi9cyQQPJyFt4lz5XqDmuA7WihM69nekvlnU/JjDDaoCidYvhzxkTvRqji7CsnqFkJvJNLrw9YbZf7CB/yBRBEKGgEV0bHQ4dSxIpAoTILziUgI3ys0RSIOJ9y+f1zNZyTyUpxhfvkogxcOT+9N/jbxwix93mF/IuZ1Crymsbt4SgXpeDZtj73Nf++eSMspnZQi7DvMTu5oLEGRrbb60XMOE3Ih9NiidOpcRC8uMPchb1ZAT8xrswtTlD3SX97de70UJbdNnU4AbRnBSb7D/ah5kZxz4L+U9RhuADlmGTooRx5rLMI9BSnU65Ibxct5DcE4cgyxOAipiYOmIL2uuk/XFeZXXpumCcObX3tKmZCZSS+a3A/Uwwy4MdBRzFhMiSYnfNgcysw7br3gRUqlrc0k4TW+gneHpI3cpyV0/BQGgQkAVfRzlXC0wEAhwllRK6f48nt8PH+Bhd8JFtS/Sq9RsDr4IIstqKPNvWl/xv+6SlaFMYEd5/qRGyU/Z0ViUZVjgecQ0REcNIq837ZSywOj5YXXI8EWtRfpk=
+          secure: $GITHUB_APIKEY
         file: mqtt-${TRAVIS_OS_NAME}-${TRAVIS_TAG}.zip
         on:
           tags: true
