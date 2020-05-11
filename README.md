@@ -4,7 +4,7 @@
 
 ## Introduction
 
-This interface provides kdb+ users with the ability to interact with the Message Queuing Telemetry Transport [(MQTT)](http://mqtt.org/) ISO publish-subscribe messaging protocol. The interface is a thin wrapper for kdb+ around the [eclipse/paho.mqtt.c](https://github.com/eclipse/paho.mqtt.c) C api.
+This interface provides kdb+ users with the ability to interact with the Message Queuing Telemetry Transport [(MQTT)](http://mqtt.org/) messaging protocol. The interface is a thin wrapper for kdb+ around the [eclipse/paho.mqtt.c](https://github.com/eclipse/paho.mqtt.c) C api.
 
 This is part of the [_Fusion for kdb+_](http://code.kx.com/q/interfaces/fusion/) interface collection.
 
@@ -32,7 +32,7 @@ MQTT is used commonly for constrained devices with low-bandwidth, high-latency o
 Linux, MacOS and Windows users should complete the following steps
 
 1. Download the latest release of the `paho.mqtt.c` C api for your system architecture, available [here](https://github.com/eclipse/paho.mqtt.c/releases).
-2. Unzip this release and move to a location appropriate for your system.
+2. Unzip this release to a location appropriate for your system.
 3. Set an environment variable `$PAHO_HOME` / `%PAHO_HOME%` pointing to the location of the installed and unzipped release.
 
 #### ARM 32 build
