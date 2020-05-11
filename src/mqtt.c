@@ -53,6 +53,8 @@ static int getIntFromList(K propValues,int row)
 {
   if (propValues->t == KI)
     return kI(propValues)[row];
+  else if (propValues->t == KJ)
+    return (int)kJ(propValues)[row];
   else
     return kK(propValues)[row]->i;
 }
