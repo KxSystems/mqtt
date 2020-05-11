@@ -15,14 +15,23 @@ IF NOT EXIST lib (
     EXIT /B
 )
 
-IF NOT EXIST script (
-    ECHO ERROR: Directory 'script' does not exist. Please run from release package
+IF NOT EXIST q (
+    ECHO ERROR: Directory 'q' does not exist. Please run from release package
     EXIT /B
 )
 
-ECHO Copying scripts to %QHOME%
-COPY script\* %QHOME%
-ECHO Copying dll to %QHOME%\w64
+ECHO Copying q script to %QHOME%
+COPY q\* %QHOME%
+IF %ERRORLEVEL% NEQ 0 (
+    ECHO ERROR: Copy failed
+    EXIT /B %ERRORLEVEL%
+)
+
+ECHO Copying DLL to %QHOME%\w64
 COPY lib\* %QHOME%\w64\
+IF %ERRORLEVEL% NEQ 0 (
+    ECHO ERROR: Copy failed
+    EXIT /B %ERRORLEVEL%
+)
 
 ECHO Installation complete

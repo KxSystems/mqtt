@@ -1,4 +1,4 @@
-\l ../script/mqtt.q
+\l ../q/mqtt.q
 
 // Load in log file provided by Keysight to be published to user
 // Initialize a counter to allow us to stop after a set number of published messages

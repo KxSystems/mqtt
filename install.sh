@@ -58,8 +58,8 @@ if [ ! -w "$Q_SHARED_LIB_DIR" ]; then
     echo "ERROR: Directory '$Q_SHARED_LIB_DIR' does not exist"
     exit 1
 fi
-if [ ! -d script ]; then
-    echo "ERROR: Directory 'script' does not exist. Please run from release package"
+if [ ! -d q ]; then
+    echo "ERROR: Directory 'q' does not exist. Please run from release package"
     exit 1
 fi
 if [ ! -d lib ]; then
@@ -67,8 +67,8 @@ if [ ! -d lib ]; then
     exit 1
 fi
 
-echo "Copying script to $Q_SCRIPT_DIR ..."
-cp script/* $Q_SCRIPT_DIR
+echo "Copying q script to $Q_SCRIPT_DIR ..."
+cp q/* $Q_SCRIPT_DIR
 if [ $? -ne 0 ]; then
     echo "ERROR: copy failed"
     exit 1

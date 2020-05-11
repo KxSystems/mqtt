@@ -1,4 +1,4 @@
-\l ../script/mqtt.q
+\l ../q/mqtt.q
 
 .mqtt.msgrcvd:{cbfn[x;y];0N!"Message received"}
 
