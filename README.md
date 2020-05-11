@@ -114,11 +114,11 @@ The `PAHO_HOME` and `QHOME` directories are specified at the top of `mqtt_build.
 
 ## Documentation
 
-Documentation outlining the functionality available for this interface can be found [here](http://code.kx.com/v2/interfaces/mqtt/).
+Documentation outlining the functionality available for this interface can be found [here](http://code.kx.com/q/interfaces/mqtt/).
 
 ## Status
 
-The mqtt interface is still in development and is provided here as a beta release under an Apache 2.0 license.
+The mqtt interface is provided here under an Apache 2.0 license.
 
 If you find issues with the interface or have feature requests, please consider raising an issue [here](https://github.com/KxSystems/mqtt/issues).
 
