@@ -41,24 +41,25 @@ static void msgsent(void *context, MQTTClient_deliveryToken dt);
 static int msgrcvd(void *context, char* topic, int unused, MQTTClient_message *msg);
 static void disconn(void *context, char* cause);
 
-static char* getStringFromList(K propValues,int row)
+static char* getStringFromList(K propValues,int row, const char** value, char* errStr)
 {
-  if (propValues->t == KS)
-    return kS(propValues)[row];
-  else
-    return kK(propValues)[row]->s;
+  if ((int)(kK(propValues)[row]->t) == -KS)
+  {
+    *value = strdup(kK(propValues)[row]->s);
+    return 0;
+  }
+  return errStr;
 }
 
-static int getIntFromList(K propValues,int row)
+static char* getIntFromList(K propValues,int row, int* value, char* errStr)
 {
-  if (propValues->t == KI)
-    return kI(propValues)[row];
-  else if (propValues->t == KJ)
-    return (int)(kJ(propValues)[row]);
-  else if (propValues->t == -KI)
-    return kK(propValues)[row]->i;
-  else
-    return (int)(kK(propValues)[row]->j);
+  if ((int)(kK(propValues)[row]->t) == -KI)
+    *value = kK(propValues)[row]->i;
+  else if ((int)(kK(propValues)[row]->t) == -KJ)
+    *value = (int)(kK(propValues)[row]->j);
+  else 
+    return errStr;
+  return 0;
 }
 
 /* Establish a tcp connection from a q process to mqtt client
@@ -66,60 +67,70 @@ static int getIntFromList(K propValues,int row)
  * pname   = name to be associated with the connecting process (symbol)
  * opt     = connection options (dict - keys 'username' and 'password' currently supported as symbol types)
 */
-EXP K conn(K tcpconn,K pname, K opt){
+EXP K connX(K tcpconn,K pname, K opt){
   int err;
   if(tcpconn->t != -KS)
     return krr("addr type");
   if(pname->t != -KS)
     return krr("client type");
-  if(opt && opt->t != XD)
+  if(opt->t != XD)
     return krr("options");
   client = 0;
-  if(MQTTCLIENT_SUCCESS != (err = MQTTClient_create(&client, tcpconn->s, pname->s, MQTTCLIENT_PERSISTENCE_NONE, NULL)))
-    return krr((S)MQTTClient_strerror(err));
+
   MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
 
-  char* username = 0;
-  char* password = 0;
-  if (opt && opt->t == XD && opt->n==2)
+  K propNames = (kK(opt)[0]);
+  K propValues = (kK(opt)[1]);
+  int row = 0;
+  char* errStr = 0;
+  for (;(row<propNames->n && errStr==0);++row)
   {
-    K propNames = (kK(opt)[0]);
-    K propValues = (kK(opt)[1]);
-    int row = 0;
-    for (;row<propNames->n;++row)
-    {
-      if (strcmp(kS(propNames)[row],"username")==0)
-      {
-        username = strdup(getStringFromList(propValues,row));
-        conn_opts.username = username;
-      }
-      else if (strcmp(kS(propNames)[row],"password")==0)
-      {
-        password = strdup(getStringFromList(propValues,row));
-        conn_opts.password = password;
-      }
-      else if (strcmp(kS(propNames)[row],"keepAliveInterval")==0)
-        conn_opts.keepAliveInterval = getIntFromList(propValues,row);
-      else if (strcmp(kS(propNames)[row],"cleansession")==0)
-        conn_opts.cleansession = getIntFromList(propValues,row);
-      else if (strcmp(kS(propNames)[row],"reliable")==0)
-        conn_opts.reliable = getIntFromList(propValues,row);
-      else if (strcmp(kS(propNames)[row],"connectTimeout")==0)
-        conn_opts.connectTimeout = getIntFromList(propValues,row);
-      else if (strcmp(kS(propNames)[row],"retryInterval")==0)
-        conn_opts.retryInterval = getIntFromList(propValues,row);
-      else if (strcmp(kS(propNames)[row],"MQTTVersion")==0)
-        conn_opts.MQTTVersion = getIntFromList(propValues,row);
-      else if (strcmp(kS(propNames)[row],"maxInflightMessages")==0)
-        conn_opts.maxInflightMessages = getIntFromList(propValues,row);
-      else if (strcmp(kS(propNames)[row],"cleanstart")==0)
-        conn_opts.cleanstart = getIntFromList(propValues,row);
-    }
+    if ((kS(propNames)[row])[0] == '\0')
+      continue;
+
+    if (strcmp(kS(propNames)[row],"username")==0)
+      errStr = getStringFromList(propValues,row,&conn_opts.username,"username type incorrect");
+    else if (strcmp(kS(propNames)[row],"password")==0)
+      errStr = getStringFromList(propValues,row,&conn_opts.password,"password type incorrect");
+    else if (strcmp(kS(propNames)[row],"keepAliveInterval")==0)
+      errStr = getIntFromList(propValues,row,&conn_opts.keepAliveInterval,"keepAliveInterval type incorrect");
+    else if (strcmp(kS(propNames)[row],"cleansession")==0)
+      errStr = getIntFromList(propValues,row,&conn_opts.cleansession,"cleansession type incorrect"); 
+    else if (strcmp(kS(propNames)[row],"reliable")==0)
+      errStr = getIntFromList(propValues,row,&conn_opts.reliable,"reliable type incorrect");
+    else if (strcmp(kS(propNames)[row],"connectTimeout")==0)
+      errStr = getIntFromList(propValues,row,&conn_opts.connectTimeout,"connectTimeout type incorrect");
+    else if (strcmp(kS(propNames)[row],"retryInterval")==0)
+      errStr = getIntFromList(propValues,row,&conn_opts.retryInterval,"retryInterval type incorrect");
+    else if (strcmp(kS(propNames)[row],"MQTTVersion")==0)
+      errStr = getIntFromList(propValues,row,&conn_opts.MQTTVersion,"MQTTVersion type incorrect");
+    else if (strcmp(kS(propNames)[row],"maxInflightMessages")==0)
+      errStr = getIntFromList(propValues,row,&conn_opts.maxInflightMessages,"maxInflightMessages type incorrect");
+    else if (strcmp(kS(propNames)[row],"cleanstart")==0)
+      errStr = getIntFromList(propValues,row,&conn_opts.cleanstart,"cleanstart type incorrect");
+    else
+      errStr = "Unsupported conn opt name in dictionary";
   }
+
+  if (errStr != 0)
+  {
+    free((void*)conn_opts.username);
+    free((void*)conn_opts.password);
+    return krr(errStr);
+  }
+  
+  if(MQTTCLIENT_SUCCESS != (err = MQTTClient_create(&client, tcpconn->s, pname->s, MQTTCLIENT_PERSISTENCE_NONE, NULL)))
+  {
+    free((void*)conn_opts.username);
+    free((void*)conn_opts.password);
+    return krr((S)MQTTClient_strerror(err));
+  }
+
   MQTTClient_setCallbacks(client, NULL, disconn, msgrcvd, msgsent);
   err = MQTTClient_connect(client, &conn_opts);
-  free(username);
-  free(password);
+  free((void*)conn_opts.username);
+  free((void*)conn_opts.password);
+
   if(MQTTCLIENT_SUCCESS != err)
     return krr((S)MQTTClient_strerror(err));
   return (K)0;
