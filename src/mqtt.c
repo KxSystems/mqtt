@@ -81,6 +81,13 @@ EXP K connX(K tcpconn,K pname, K opt){
 
   K propNames = (kK(opt)[0]);
   K propValues = (kK(opt)[1]);
+  if(propNames->n > 0)
+  {
+    if(propNames->t != KS)
+      return krr("options key type incorrect");
+    if(propValues->t != 0)
+      return krr("options value type incorrect");
+  }
   int row = 0;
   char* errStr = 0;
   for (;(row<propNames->n && errStr==0);++row)
@@ -118,7 +125,7 @@ EXP K connX(K tcpconn,K pname, K opt){
     free((void*)conn_opts.password);
     return krr(errStr);
   }
-  
+
   if(MQTTCLIENT_SUCCESS != (err = MQTTClient_create(&client, tcpconn->s, pname->s, MQTTCLIENT_PERSISTENCE_NONE, NULL)))
   {
     free((void*)conn_opts.username);
