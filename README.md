@@ -33,7 +33,7 @@ Linux, MacOS and Windows users should complete the following steps
 
 1. Download the latest release of the `paho.mqtt.c` C api for your system architecture, available [here](https://github.com/eclipse/paho.mqtt.c/releases).
 2. Unzip this release and move to a location appropriate for your system.
-3. Set an environment variable `$PAHO_HOME/%PAHO_HOME%` pointing to the location of the installed and unzipped release.
+3. Set an environment variable `$PAHO_HOME` / `%PAHO_HOME%` pointing to the location of the installed and unzipped release.
 
 #### ARM 32 build
 
@@ -41,51 +41,76 @@ For 32-bit arm systems, there are currently no prebuilt releases available. As s
 
 ### Interface build and install
 
-#### Linux/MacOS/Arm 32-bit
-
 In order to successfully build and install this interface, the following environment variables must be set
 
 1. `PAHO_HOME` = Location of a paho mqtt C api release
 2. `QHOME` = Q installation directory (directory containing `q.k`)
 
-* Create the interface shared object
+#### Linux/MacOS/Arm 32-bit
+
+- Create an out-of-source directory for the CMake and object files
+
+```bash
+mkdir cmake && cd cmake
+```
+
+- Generate the makefile (defaults to a generator for the native build system with a release target type)
+
+```bash
+cmake ..
+```
+
+- Build the interface shared object
 
 ```bash
 make
 ```
 
-* Copy the shared object to `$QHOME/[ml](64|32)`
+- Create the installation package into sub-directory `mqtt`
 
 ```bash
 make install
 ```
 
-* Remove the shared object from the build location
+- Install the package (copies the shared object to`$QHOME/[ml](64|32)` )
 
 ```bash
-make clean
+cd mqtt && ./install.sh
 ```
 
 #### Windows
 
-Two methods are provided for building a Windows version of this interface
+From a Visual Studio command prompt:
 
-1. A VS2019 solution is provided in the subdirectory `vs2019` to build mqtt for x64 Windows.
-2. The script `builds/build.bat` allows for build to be initialized from command line
+- Create an out-of-source directory for the CMake and object files.
 
-**Visual Studio 2019**
+```bash
+mkdir cmake && cd cmake
+```
 
-- This assumes that `mqtt`, `paho.mqtt.c` and `kdb` (downloaded from [here](https://github.com/kxsystems/kdb)) have been installed at the same directory level with `paho.mqtt.c` being built using `cbuild.bat`, located in the root of the`paho.mqtt.c` repository.  These can be changed by updating the Include and Library directories in the project.
+- Generate the VS solution
 
-**Command line**
+```bash
+cmake ..
+```
 
-- The script `build/build.bat` allows a user to install from command line. In order to ensure that the install is successful please modify the `MSVC` and `paho.mqtt.c` directories at the top of this file to support your environment.
+- Build the interface DLL and create the installation package into sub-directory `mqtt`
+
+```bash
+MSBuild.exe INSTALL.vcxproj /p:Configuration=Release /p:Platform=x64
+```
+
+- Install the package (copies the shared object to`%QHOME%/w64` )
+
+```bash
+cd mqtt && install.bat
+```
 
 #### Docker - Linux
 
-A sample docker file is provided in the `docker_linux` directory to create a CentOS 7 environment with both the kdb+ `mqtt` interface and `paho.mqtt.c` api built and installed.
+A sample docker file is provided in the `docker_linux` directory to create a CentOS 7 environment (including downloading the `paho.mqtt.c` 64 bit Linux release) before building and installing the kdb+ `mqtt` interface.
 
-The source directories are specified at the top of `mqtt_build.bat`, which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the libraries.
+The `PAHO_HOME` and `QHOME` directories are specified at the top of `mqtt_build.bat`, which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the library.
 
 ## Documentation
 

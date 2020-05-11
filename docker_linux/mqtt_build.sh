@@ -1,7 +1,12 @@
 #/bin/bash
 
-make --directory /source/mqtt
-make install --directory /source/mqtt
+mkdir /source/mqtt/cmake
+cd  /source/mqtt/cmake
+cmake ..
+make
+make install
+cd mqtt
+./install.sh
 
 /bin/bash
 
