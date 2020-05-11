@@ -54,9 +54,11 @@ static int getIntFromList(K propValues,int row)
   if (propValues->t == KI)
     return kI(propValues)[row];
   else if (propValues->t == KJ)
-    return (int)kJ(propValues)[row];
-  else
+    return (int)(kJ(propValues)[row]);
+  else if (propValues->t == -KI)
     return kK(propValues)[row]->i;
+  else
+    return (int)(kK(propValues)[row]->j);
 }
 
 /* Establish a tcp connection from a q process to mqtt client
