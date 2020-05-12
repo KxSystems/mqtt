@@ -1,6 +1,6 @@
 # `mqtt` - MQTT for kdb+
 
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/kxsystems/mqtt)](https://github.com/kxsystems/mqtt/releases) [![Travis (.org) branch](https://img.shields.io/travis/kxsystems/mqtt/master?label=travis%20build)](https://travis-ci.org/kxsystems/mqtt/branches)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/kxsystems/mqtt?include_prereleases)](https://github.com/kxsystems/mqtt/releases) [![Travis (.org) branch](https://img.shields.io/travis/kxsystems/mqtt/master?label=travis%20build)](https://travis-ci.org/kxsystems/mqtt/branches)
 
 ## Introduction
 
