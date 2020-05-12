@@ -34,6 +34,25 @@ Linux, MacOS and Windows users should complete the following steps
 1. Download the latest release of the `paho.mqtt.c` C api for your system architecture, available [here](https://github.com/eclipse/paho.mqtt.c/releases).
 2. Unzip this release to a location appropriate for your system.
 3. Set an environment variable `$PAHO_HOME` / `%PAHO_HOME%` pointing to the location of the installed and unzipped release.
+4. Make the paho.mqtt.c api available to kdb.
+
+For Linux and MacOS, add the location of the 'lib' directory to `LD_LIBRARY_PATH`/`DYLD_LIBRARY_PATH` as appropriate
+```
+## Linux
+export LD_LIBRARY_PATH=$PAHO_HOME/lib/:$LD_LIBRARY_PATH
+
+## MacOS
+export DYLD_LIBRARY_PATH=$PAHO_HOME/lib/:$DYLD_LIBRARY_PATH
+```
+For Windows, create links to the paho dll's in the `%QHOME%\w64` directory.
+e.g.
+```
+cd %QHOME%\w64
+MKLINK paho-mqtt3a.dll %PAHO_HOME%\lib\paho-mqtt3a.dll
+MKLINK paho-mqtt3as.dll %PAHO_HOME%\lib\paho-mqtt3as.dll
+MKLINK paho-mqtt3c.dll %PAHO_HOME%\lib\paho-mqtt3c.dll
+MKLINK paho-mqtt3cs.dll %PAHO_HOME%\lib\paho-mqtt3cs.dll
+```
 
 #### ARM 32 build
 
@@ -45,15 +64,7 @@ It is recommended that a user install this interface through a release. This is 
 
 1. Ensure you have downloaded/installed the `paho.mqtt.c` C api following the instructions [here](#third-party-library-installation)
 2. Download a release from [here](https://github.com/KxSystems/mqtt/releases) for your system architecture.
-3. Add the location of the 'lib' directory for the `paho.mqtt.c` C api to `LD_LIBRARY_PATH`/`DYLD_LIBRARY_PATH` for Linux or MacOS respectively.
-```
-## Linux
-export LD_LIBRARY_PATH=$PAHO_HOME/lib/:$LD_LIBRARY_PATH
-
-## MacOS
-export DYLD_LIBRARY_PATH=$PAHO_HOME/lib/:$DYLD_LIBRARY_PATH
-```
-4. Install script `hdf5.q` to `$QHOME`, and binary file `lib/libhdf5.(so|dll)` to `$QHOME/[mlw](64)`, by executing the following from the Release directory
+3. Install script `hdf5.q` to `$QHOME`, and binary file `lib/libhdf5.(so|dll)` to `$QHOME/[mlw](64)`, by executing the following from the Release directory
 ```
 ## Linux/MacOS
 chmod +x install.sh && ./install.sh
