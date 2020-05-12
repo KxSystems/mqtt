@@ -26,8 +26,7 @@ jobs:
         - tar -zcvf mqtt-${TRAVIS_OS_NAME}-${TRAVIS_TAG}.tar.gz mqtt
       deploy:
         provider: releases
-        api_key:
-          secure: $GITHUB_APIKEY
+        api_key: "$GITHUB_APIKEY"
         file: mqtt-${TRAVIS_OS_NAME}-${TRAVIS_TAG}.tar.gz
         on:
           tags: true
@@ -51,8 +50,7 @@ jobs:
         - tar -zcvf mqtt-${TRAVIS_OS_NAME}-${TRAVIS_TAG}.tar.gz mqtt
       deploy:
         provider: releases
-        api_key:
-          secure: $GITHUB_APIKEY
+        api_key: "$GITHUB_APIKEY"
         file: mqtt-${TRAVIS_OS_NAME}-${TRAVIS_TAG}.tar.gz
         on:
           tags: true
@@ -78,8 +76,7 @@ jobs:
         - 7z a -r mqtt-${TRAVIS_OS_NAME}-${TRAVIS_TAG}.zip mqtt/*
       deploy:
         provider: releases
-        api_key:
-          secure: $GITHUB_APIKEY
+        api_key: "$GITHUB_APIKEY"
         file: mqtt-${TRAVIS_OS_NAME}-${TRAVIS_TAG}.zip
         on:
           tags: true
