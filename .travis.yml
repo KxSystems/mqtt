@@ -16,7 +16,7 @@ before_install:
   - export TESTS="False"
   - export BUILD="True"
 
-  # Run instructions to install the C/C++ requirements (BUILD_HOME) set in place of PAHO_HOME/HDF5_HOME etc.
+  # Run instructions to install the C/C++ requirements (BUILD_HOME) set in place of PAHO_HOME/HDF5_HOME etc
   # Files in this case are unzipped into cbuild within travis_setup.sh
   - if [[ $BUILD == "True" ]]; then
       chmod +x travis_setup.sh; 
