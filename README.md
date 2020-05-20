@@ -32,26 +32,26 @@ MQTT is used commonly for constrained devices with low-bandwidth, high-latency o
 Linux, MacOS and Windows users should complete the following steps
 
 1. Download the latest release of the `paho.mqtt.c` C api for your system architecture, available [here](https://github.com/eclipse/paho.mqtt.c/releases).
-2. Unzip this release to a location appropriate for your system.
-3. Set an environment variable `$PAHO_HOME` / `%PAHO_HOME%` pointing to the location of the installed and unzipped release.
+2. Unzip this release and move to a location appropriate for your system.
+3. Set an environment variable `$BUILD_HOME` / `%BUILD_HOME%` pointing to the location of the installed and unzipped release.
 4. Make the paho.mqtt.c api available to kdb.
 
 For Linux and MacOS, add the location of the 'lib' directory to `LD_LIBRARY_PATH`/`DYLD_LIBRARY_PATH` as appropriate
 ```
 ## Linux
-export LD_LIBRARY_PATH=$PAHO_HOME/lib/:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$BUILD_HOME/lib/:$LD_LIBRARY_PATH
 
 ## MacOS
-export DYLD_LIBRARY_PATH=$PAHO_HOME/lib/:$DYLD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=$BUILD_HOME/lib/:$DYLD_LIBRARY_PATH
 ```
 For Windows, create links to the paho dll's in the `%QHOME%\w64` directory.
 e.g.
 ```
 cd %QHOME%\w64
-MKLINK paho-mqtt3a.dll %PAHO_HOME%\lib\paho-mqtt3a.dll
-MKLINK paho-mqtt3as.dll %PAHO_HOME%\lib\paho-mqtt3as.dll
-MKLINK paho-mqtt3c.dll %PAHO_HOME%\lib\paho-mqtt3c.dll
-MKLINK paho-mqtt3cs.dll %PAHO_HOME%\lib\paho-mqtt3cs.dll
+MKLINK paho-mqtt3a.dll %BUILD_HOME%\lib\paho-mqtt3a.dll
+MKLINK paho-mqtt3as.dll %BUILD_HOME%\lib\paho-mqtt3as.dll
+MKLINK paho-mqtt3c.dll %BUILD_HOME%\lib\paho-mqtt3c.dll
+MKLINK paho-mqtt3cs.dll %BUILD_HOME%\lib\paho-mqtt3cs.dll
 ```
 
 #### ARM 32 build
@@ -77,7 +77,7 @@ install.bat
 
 In order to successfully build and install this interface from source, the following environment variables must be set
 
-1. `PAHO_HOME` = Location of a paho mqtt C api release
+1. `BUILD_HOME` = Location of a paho mqtt C api release
 2. `QHOME` = Q installation directory (directory containing `q.k`)
 
 #### Linux/MacOS/ARM 32-bit
@@ -144,7 +144,7 @@ cd mqtt && install.bat
 
 A sample docker file is provided in the `docker_linux` directory to create a CentOS 7 environment (including downloading the `paho.mqtt.c` 64 bit Linux release) before building and installing the kdb+ `mqtt` interface.
 
-The `PAHO_HOME` and `QHOME` directories are specified at the top of `mqtt_build.bat`, which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the library.
+The `BUILD_HOME` and `QHOME` directories are specified at the top of `mqtt_build.bat`, which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the library.
 
 ## Documentation
 
