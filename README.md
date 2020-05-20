@@ -33,7 +33,7 @@ Linux, MacOS and Windows users should complete the following steps
 
 1. Download the latest release of the `paho.mqtt.c` C api for your system architecture, available [here](https://github.com/eclipse/paho.mqtt.c/releases).
 2. Unzip this release and move to a location appropriate for your system.
-3. Set an environment variable `$PAHO_HOME` / `%PAHO_HOME%` pointing to the location of the installed and unzipped release.
+3. Set an environment variable `$BUILD_HOME` / `%BUILD_HOME%` pointing to the location of the installed and unzipped release.
 
 #### ARM 32 build
 
@@ -43,7 +43,7 @@ For 32-bit arm systems, there are currently no prebuilt releases available. As s
 
 In order to successfully build and install this interface, the following environment variables must be set
 
-1. `PAHO_HOME` = Location of a paho mqtt C api release
+1. `BUILD_HOME` = Location of a paho mqtt C api release
 2. `QHOME` = Q installation directory (directory containing `q.k`)
 
 #### Linux/MacOS/Arm 32-bit
@@ -110,7 +110,7 @@ cd mqtt && install.bat
 
 A sample docker file is provided in the `docker_linux` directory to create a CentOS 7 environment (including downloading the `paho.mqtt.c` 64 bit Linux release) before building and installing the kdb+ `mqtt` interface.
 
-The `PAHO_HOME` and `QHOME` directories are specified at the top of `mqtt_build.bat`, which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the library.
+The `BUILD_HOME` and `QHOME` directories are specified at the top of `mqtt_build.bat`, which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the library.
 
 ## Documentation
 
