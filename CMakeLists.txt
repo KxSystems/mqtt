@@ -6,17 +6,13 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE MinSizeRel)
 endif()
 
-if(NOT QLIB_NAME)
-	set(QLIB_NAME mqtt)
-endif()
-
 cmake_minimum_required(VERSION 2.8)
-project(QLIB_NAME C)
+project(mqtt C)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -DKXVER=3")
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -DKXVER=3")
 
-set(MY_LIBRARY_NAME ${QLIB_NAME})
+set(MY_LIBRARY_NAME mqtt)
 file(GLOB SRC_FILES src/mqtt.c) # Do not add 'socket_pair.c' since it gets included
 set_source_files_properties(${SRC_FILES} PROPERTIES LANGUAGE C)
 
@@ -66,13 +62,10 @@ add_library (${MY_LIBRARY_NAME} SHARED ${SRC_FILES})
 IF(APPLE)
    set_target_properties(${MY_LIBRARY_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
    set_target_properties(${MY_LIBRARY_NAME} PROPERTIES SUFFIX .so)
-   set(INSTALL_SCRIPT "install.sh")
    set(OSFLAG m)
 elseif(WIN32)
-   set(INSTALL_SCRIPT "install.bat")
    set(OSFLAG w)
 else()
-   set(INSTALL_SCRIPT "install.sh")
    set(OSFLAG l)
 endif()
 
