@@ -42,12 +42,14 @@ fi
 Q_MACH_TYPE=""
 if [[ "$HOSTTYPE" == "x86_64" ]]; then
     Q_MACH_TYPE="64"
+elif [[ "$HOSTTYPE" == "arm" ]]; then
+    Q_MACH_TYPE="32arm"
 else
     Q_MACH_TYPE="32"
 fi
 
 Q_SCRIPT_DIR=${QHOME}${Q_PATH_SEP}
-Q_SHARED_LIB_DIR="${QHOME}${Q_PATH_SEP}${Q_HOST_TYPE}${Q_SHARED_LIB_DIR}${Q_MACH_TYPE}${Q_PATH_SEP}"
+Q_SHARED_LIB_DIR="${QHOME}${Q_PATH_SEP}${Q_HOST_TYPE}${Q_MACH_TYPE}${Q_PATH_SEP}"
 
 # check destination directory exists
 if [ ! -w "$Q_SCRIPT_DIR" ]; then
