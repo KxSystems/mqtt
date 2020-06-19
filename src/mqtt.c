@@ -149,7 +149,7 @@ EXP K connX(K tcpconn,K pname, K opt){
 
 EXP K disconnect(K timeout){
   if(!MQTTClient_isConnected(client))
-    return krr((S)"No client is not currently connected");
+    return krr((S)"No client is currently connected");
   else{
     MQTTClient_disconnect(client,(time_t)timeout->i);
     MQTTClient_destroy(&client);
