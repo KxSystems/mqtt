@@ -143,6 +143,28 @@ EXP K connX(K tcpconn,K pname, K opt){
   return (K)0;
 }
 
+/* Disconnect from an mqtt client
+ * timeout = length of time in ms to allow for the client to clean up prior to disconnection
+*/
+
+EXP K disconnect(K timeout){
+  if(!MQTTClient_isConnected(client))
+    return krr((S)"No client is not currently connected");
+  else{
+    MQTTClient_disconnect(client,(time_t)timeout->i);
+    MQTTClient_destroy(&client);
+  }
+  return kp("Client successfully destroyed");
+}
+
+EXP K isConnected(K UNUSED(x)){
+  if(!MQTTClient_isConnected(client))
+    return kb(0);
+  else
+    return kb(1);
+}
+
+
 /* Publish a message to a specified topic
  * topic = topic name as a symbol
  * msg   = message content as a string
