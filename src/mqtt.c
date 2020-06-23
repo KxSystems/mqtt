@@ -154,7 +154,7 @@ EXP K disconnect(K timeout){
     MQTTClient_disconnect(client,(time_t)timeout->i);
     MQTTClient_destroy(&client);
   }
-  return kp("Client successfully destroyed");
+  return (K)0;
 }
 
 EXP K isConnected(K UNUSED(x)){
