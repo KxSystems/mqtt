@@ -32,7 +32,7 @@ MQTT is used commonly for constrained devices with low-bandwidth, high-latency o
 
 1. Ensure [MQTT C api](https://github.com/eclipse/paho.mqtt.c/releases) (`paho.mqtt.c`) is installed.
 2. Make the MQTT library available from kdb+:
-   - Linux: Add the lib directory which includes `include` and `lib` to the `LD_LIBRARY_PATH` environment variable e.g. if unzipped to `/usr/local/eclipse-paho-mqtt-c/`, run:
+   - Linux: Add the lib directory which includes `include` and `lib` to the `LD_LIBRARY_PATH` environment variable e.g. if unzipped to `/usr/local/Eclipse-Paho-MQTT-C/`, run:
         ```bash
 
         $ export LD_LIBRARY_PATH=/usr/local/Eclipse-Paho-MQTT-C/lib/:$LD_LIBRARY_PATH
@@ -62,26 +62,34 @@ MQTT is used commonly for constrained devices with low-bandwidth, high-latency o
 1. Download the latest release of the [MQTT C api](https://github.com/eclipse/paho.mqtt.c/releases) (`paho.mqtt.c`).
 2. Set an environment variable `MQTT_INSTALL_DIR` pointing to the location of the installed and unzipped release where `include` and `lib` are located. This environmental variable will be used to link the library to MQTT-kdb+ interface.
 
-```bash
+     ```bash
 
-]$ mkdir paho_mqtt_c
-]$ tar xzf Eclipse-Paho-MQTT-C-1.3.8-Linux.tar.gz -C paho_mqtt_c/ --strip-components=1
-]$ cd paho_mqtt_c/
-paho_mqtt_c]$ export MQTT_INSTALL_DIR=$(pwd)
+     ]$ mkdir paho_mqtt_c
+     ]$ tar xzf Eclipse-Paho-MQTT-C-1.3.8-Linux.tar.gz -C paho_mqtt_c/ --strip-components=1
+     ]$ cd paho_mqtt_c/
+     paho_mqtt_c]$ export MQTT_INSTALL_DIR=$(pwd)
 
-```
+     ```
+
+3. For macOSX add the lib directory which includes `include` and `lib` to the `DYLD_LIBRARY_PATH` environment variable e.g. if unzipped to `/Users/jim/Eclipse-Paho-MQTT-C/`, run:
+   
+     ```bash
+
+     $ export DYLD_LIBRARY_PATH=/Users/jim/Eclipse-Paho-MQTT-C/lib/:$DYLD_LIBRARY_PATH
+     
+     ```
 
 4. Clone MQTT-kdb+ repository and build with `cmake`.
 
-```bash
+     ```bash
 
-]$ git clone https://github.com/KxSystems/mqtt.git
-]$ cd mqtt
-mqtt]$ mkdir build && cd build
-build]$ cmake ..
-build]$ cmake --build . --target install
+     ]$ git clone https://github.com/KxSystems/mqtt.git
+     ]$ cd mqtt
+     mqtt]$ mkdir build && cd build
+     build]$ cmake ..
+     build]$ cmake --build . --target install
 
-```
+     ```
 
 **Note:** `cmake --build . --target install` as used in the Linux/MacOS builds installs the required share object and q files to the `QHOME/[ml]64` and `QHOME` directories respectively. If you do not wish to install these files directly, you can execute `cmake --build .` instead of `cmake --build . --target install` and move the files from their build location at `build/mqttkdb`.
 
@@ -91,31 +99,31 @@ build]$ cmake --build . --target install
 2. Set an environment variable `MQTT_INSTALL_DIR` pointing to the location of the installed and unzipped release where `include` and `lib` are located. This environmental variable will be used to link the library to MQTT-kdb+ interface.
 3. Create links to the paho dll's in the `%QHOME%\w64` directory.
 
-```bat
+     ```bat
 
-> mkdir paho_mqtt_c
-> 7z x eclipse-paho-mqtt-c-win64-1.3.8.zip -opaho_mqtt_c
-> cd paho_mqtt_c
-paho_mqtt_c> set MQTT_INSTALL_DIR=%cd%
-paho_mqtt_c> cd %QHOME%\w64
-w64> MKLINK paho-mqtt3a.dll %MQTT_INSTALL_DIR%\lib\paho-mqtt3a.dll
-w64> MKLINK paho-mqtt3as.dll %MQTT_INSTALL_DIR%\lib\paho-mqtt3as.dll
-w64> MKLINK paho-mqtt3c.dll %MQTT_INSTALL_DIR%\lib\paho-mqtt3c.dll
-w64> MKLINK paho-mqtt3cs.dll %MQTT_INSTALL_DIR%\lib\paho-mqtt3cs.dll
+     > mkdir paho_mqtt_c
+     > 7z x eclipse-paho-mqtt-c-win64-1.3.8.zip -opaho_mqtt_c
+     > cd paho_mqtt_c
+     paho_mqtt_c> set MQTT_INSTALL_DIR=%cd%
+     paho_mqtt_c> cd %QHOME%\w64
+     w64> MKLINK paho-mqtt3a.dll %MQTT_INSTALL_DIR%\lib\paho-mqtt3a.dll
+     w64> MKLINK paho-mqtt3as.dll %MQTT_INSTALL_DIR%\lib\paho-mqtt3as.dll
+     w64> MKLINK paho-mqtt3c.dll %MQTT_INSTALL_DIR%\lib\paho-mqtt3c.dll
+     w64> MKLINK paho-mqtt3cs.dll %MQTT_INSTALL_DIR%\lib\paho-mqtt3cs.dll
 
-```
+     ```
 
 4. Clone MQTT-kdb+ repository and build with `cmake`. Building the interface from source requires Visual Studio (assuming `-G "Visual Studio 15 2017 Win64"` is not necessary).
 
-```bat
+     ```bat
 
-> git clone https://github.com/KxSystems/mqtt.git
-> cd mqtt
-mqtt> mkdir build && cd build
-build> cmake --config Release ..
-build> cmake --build . --config Release --target install
+     > git clone https://github.com/KxSystems/mqtt.git
+     > cd mqtt
+     mqtt> mkdir build && cd build
+     build> cmake --config Release ..
+     build> cmake --build . --config Release --target install
 
-```
+     ```
 
 **Notes:** 
 
