@@ -2,8 +2,6 @@ jobs:
   include:
   - dist: xenial
     os: linux
-  - dist: trusty 
-    os: linux
   - dist: bionic
     os: linux
   - os: osx
@@ -14,18 +12,18 @@ os: linux
 dist: xenial
 
 before_install:
-  - export FILE_ROOT="mqtt"
+  - export FILE_ROOT="mqttkdb"
   - export TESTS="False"
   - export BUILD="True"
 
-  # Run instructions to install the C/C++ requirements (BUILD_HOME) set in place of PAHO_HOME/HDF5_HOME etc.
+  # Run instructions to install the C/C++ requirements (MQTT_INSTALL_DIR) set in place of PAHO_HOME/HDF5_HOME etc.
   # Files in this case are unzipped into cbuild within travis_setup.sh
   - if [[ $BUILD == "True" ]]; then
       chmod +x travis_setup.sh; 
       ./travis_setup.sh;
-      export BUILD_HOME=$TRAVIS_BUILD_DIR/cbuild
-      export LIB="cmake/$FILE_ROOT/lib";
-      mkdir cmake;
+      export MQTT_INSTALL_DIR=$TRAVIS_BUILD_DIR/cbuild
+      export LIB="build/$FILE_ROOT/lib";
+      mkdir build;
     else
       export LIB="";
     fi
@@ -47,13 +45,13 @@ before_install:
   
   # Set up q for testing and execute tests on multiple 
   - if [[ $TESTS == "True" && "x$OD" != "x" && "x$QLIC_KC" != "x" ]]; then
-      export LD_LIBRARY_PATH=$BUILD_HOME/lib:$LD_LIBRARY_PATH;
-      export DYLD_LIBRARY_PATH=$BUILD_HOME/lib:$LD_LIBRARY_PATH;
-      export PATH=$BUILD_HOME/lib:$PATH;
-      curl -o qhome/q.zip -L $OD;
-      unzip -d qhome qhome/q.zip;
-      rm qhome/q.zip;
-      echo -n $QLIC_KC |base64 --decode > qhome/kc.lic;
+      export LD_LIBRARY_PATH=${MQTT_INSTALL_DIR}/lib:$LD_LIBRARY_PATH;
+      export DYLD_LIBRARY_PATH=${MQTT_INSTALL_DIR}/lib:$LD_LIBRARY_PATH;
+      export PATH=${MQTT_INSTALL_DIR}/lib:$PATH;
+      curl -o ${QHOME}/q.zip -L $OD;
+      unzip -d ${QHOME} ${QHOME}/q.zip;
+      rm ${QHOME}/q.zip;
+      echo -n $QLIC_KC |base64 --decode > ${QHOME}/kc.lic;
     else
       echo No kdb+, no tests;
     fi
@@ -67,13 +65,15 @@ before_install:
 
   # Make binaries for the library as appropriate
   - if [[ $BUILD == "True" && $TRAVIS_OS_NAME == "windows" ]]; then
-      cd cmake && cmake -G "Visual Studio 15 2017 Win64" .. ;
-      export MSBUILD_PATH="/c/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/MSBuild/15.0/Bin/";
-      export PATH=$MSBUILD_PATH:$PATH;
-      MSBuild.exe INSTALL.vcxproj //m //nologo //verbosity:normal //p:Configuration=Release //p:Platform=x64;
+      cd build;
+      cmake -G "Visual Studio 15 2017 Win64" --config Release .. ;
+      cmake --build . --config Release --target install;
       cd ..;
     elif [[ $BUILD == "True" && ( $TRAVIS_OS_NAME == "linux" || $TRAVIS_OS_NAME == "osx" ) ]]; then
-      cd cmake && cmake .. -DCMAKE_BUILD_TYPE=Release && make install && cd .. ;
+      cd build;
+      cmake ..;
+      cmake --build . --target install;
+      cd ..;
     fi
 
 script:
@@ -81,13 +81,13 @@ script:
       q test.q tests/ -q;
     fi
   - if [[ $TRAVIS_OS_NAME == "windows" && $BUILD == "True" ]]; then
-      7z a -tzip -r $FILE_NAME ./cmake/$FILE_ROOT/*;
+      7z a -tzip -r $FILE_NAME ./build/$FILE_ROOT/*;
     elif [[ $BUILD == "True" && ( $TRAVIS_OS_NAME == "linux" || $TRAVIS_OS_NAME == "osx" ) ]]; then  
-      tar  -zcvf $FILE_NAME -C cmake/$FILE_ROOT .;
+      tar -zcvf $FILE_NAME -C build/$FILE_ROOT .;
     elif [[ $TRAVIS_OS_NAME == "windows" ]]; then
       7z a -tzip $FILE_NAME README.md install.bat LICENSE q examples;
     elif [[ $TRAVIS_OS_NAME == "linux" || $TRAVIS_OS_NAME == "osx" ]]; then
-      tar  -zcvf $FILE_NAME README.md install.sh LICENSE q examples;
+      tar -zcvf $FILE_NAME README.md install.sh LICENSE q examples;
     fi
 
 deploy:
@@ -96,5 +96,5 @@ deploy:
   file: "$FILE_NAME"
   on:
     tags: true
-    condition: $TRAVIS_OS_NAME = windows || $TRAVIS_OS_NAME = osx || ($TRAVIS_DIST = trusty && $TRAVIS_OS_NAME = linux) 
+    condition: $TRAVIS_OS_NAME = windows || $TRAVIS_OS_NAME = osx || ($TRAVIS_DIST = xenial && $TRAVIS_OS_NAME = linux) 
   skip_cleanup: 'true'
