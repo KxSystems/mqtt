@@ -35,7 +35,7 @@ add_library(${MY_LIBRARY_NAME} SHARED
 # Specify include directories
 target_include_directories (${MY_LIBRARY_NAME} PRIVATE
     ${PROJECT_SOURCE_DIR}/include
-    $ENV{SMQTT_INSTALL_DIR}/include
+    $ENV{MQTT_INSTALL_DIR}/include
 )
 
 # Basic compile flag
