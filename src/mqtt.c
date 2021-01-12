@@ -22,7 +22,7 @@ static int spair[2];
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include "socketpair.c"
+#include "socketpair.h"
 #include "k.h"
 
 #include <MQTTClient.h>
