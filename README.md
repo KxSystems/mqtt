@@ -45,7 +45,7 @@ MQTT is used commonly for constrained devices with low-bandwidth, high-latency o
       
         ```
    - Windows: Add the `paho-mqtt3a.dll`, `paho-mqtt3as.dll`, `paho-mqtt3c.dll` and `paho-mqtt3cs.dll` to the kdb+ lib directory e.g. `C:\q\w64` for 64-bit.
-3. Download the latest release of Solace-kdb+ interface from our [releases page](https://github.com/KxSystems/mqtt). To install shared library and q files, use:
+3. Download the latest release of the mqtt interface from our [releases page](https://github.com/KxSystems/mqtt). To install shared library and q files, use:
 
         # Linux/MacOS
         $ ./install.sh
@@ -53,7 +53,7 @@ MQTT is used commonly for constrained devices with low-bandwidth, high-latency o
         # Windows
         > install.bat
 
-    or copy `mqttkdb.so` or `mqttkdb.dll` into `QHOME/[l|m|w]64`
+    or copy `mqtt.q` to `QHOME`, then copy `mqttkdb.so` or `mqttkdb.dll` into `QHOME/[l|m|w]64`
 
 ### Building Interface From Source
 
