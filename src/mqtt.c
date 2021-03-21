@@ -77,6 +77,7 @@ EXP K connX(K tcpconn,K pname, K opt){
     return krr("options");
   client = 0;
 
+  MQTTClient_willOptions will_opts = MQTTClient_willOptions_initializer;
   MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
 
   K propNames = (kK(opt)[0]);
@@ -115,6 +116,15 @@ EXP K connX(K tcpconn,K pname, K opt){
       errStr = getIntFromList(propValues,row,&conn_opts.maxInflightMessages,"maxInflightMessages type incorrect");
     else if (strcmp(kS(propNames)[row],"cleanstart")==0)
       errStr = getIntFromList(propValues,row,&conn_opts.cleanstart,"cleanstart type incorrect");
+    else if (strcmp(kS(propNames)[row],"lastWillTopic")==0){
+      conn_opts.will = &will_opts;
+      errStr = getStringFromList(propValues,row,&will_opts.topicName,"lastWillTopic type incorrect");}
+    else if (strcmp(kS(propNames)[row],"lastWillQos")==0)
+      errStr = getIntFromList(propValues,row,&will_opts.qos,"lastWillQos type incorrect");
+    else if (strcmp(kS(propNames)[row],"lastWillMessage")==0)
+      errStr = getStringFromList(propValues,row,&will_opts.message,"lastWillMessage type incorrect");
+    else if (strcmp(kS(propNames)[row],"lastWillRetain")==0)
+      errStr = getIntFromList(propValues,row,&will_opts.retained,"lastWillRetain type incorrect");
     else
       errStr = "Unsupported conn opt name in dictionary";
   }
