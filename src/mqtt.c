@@ -51,6 +51,16 @@ static char* getStringFromList(K propValues,int row, const char** value, char* e
   return errStr;
 }
 
+static char* getCharArrayAsStringFromList(K propValues,int row, const char** value, char* errStr)
+{
+  if ((int)(kK(propValues)[row]->t) == KC)
+  {
+    *value = strndup((const char *)kC(kK(propValues)[row]),kK(propValues)[row]->n);
+    return 0;
+  }
+  return errStr;
+}
+
 static char* getIntFromList(K propValues,int row, int* value, char* errStr)
 {
   if ((int)(kK(propValues)[row]->t) == -KI)
@@ -122,7 +132,7 @@ EXP K connX(K tcpconn,K pname, K opt){
     else if (strcmp(kS(propNames)[row],"lastWillQos")==0)
       errStr = getIntFromList(propValues,row,&will_opts.qos,"lastWillQos type incorrect");
     else if (strcmp(kS(propNames)[row],"lastWillMessage")==0)
-      errStr = getStringFromList(propValues,row,&will_opts.message,"lastWillMessage type incorrect");
+      errStr = getCharArrayAsStringFromList(propValues,row,&will_opts.message,"lastWillMessage type incorrect");
     else if (strcmp(kS(propNames)[row],"lastWillRetain")==0)
       errStr = getIntFromList(propValues,row,&will_opts.retained,"lastWillRetain type incorrect");
     else
