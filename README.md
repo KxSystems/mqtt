@@ -22,129 +22,184 @@ MQTT is used commonly for constrained devices with low-bandwidth, high-latency o
 
 ### Requirements
 
-* kdb+ ≥ 3.5 64-bit(Linux/MacOS/Windows) and 32-bit ARM
-* [paho.mqtt.c](https://github.com/eclipse/paho.mqtt.c) ≥ 1.3.2
+* kdb+ >= 3.5 64-bit(Linux/MacOS/Windows) and 32-bit ARM
+* [paho.mqtt.c](https://github.com/eclipse/paho.mqtt.c) >= 1.3.2
+* CMake >= 3.1 [^1]
 
-### Third-Party Library Installation
-
-#### Linux/MacOS/Windows 64-bit
-
-Linux, MacOS and Windows users should complete the following steps
-
-1. Download the latest release of the `paho.mqtt.c` C api for your system architecture, available [here](https://github.com/eclipse/paho.mqtt.c/releases).
-2. Unzip this release and move to a location appropriate for your system.
-3. Set an environment variable `$BUILD_HOME` / `%BUILD_HOME%` pointing to the location of the installed and unzipped release.
-4. Make the paho.mqtt.c api available to kdb.
-
-For Linux and MacOS, add the location of the 'lib' directory to `LD_LIBRARY_PATH`/`DYLD_LIBRARY_PATH` as appropriate
-```
-## Linux
-export LD_LIBRARY_PATH=$BUILD_HOME/lib/:$LD_LIBRARY_PATH
-
-## MacOS
-export DYLD_LIBRARY_PATH=$BUILD_HOME/lib/:$DYLD_LIBRARY_PATH
-```
-For Windows, create links to the paho dll's in the `%QHOME%\w64` directory.
-e.g.
-```
-cd %QHOME%\w64
-MKLINK paho-mqtt3a.dll %BUILD_HOME%\lib\paho-mqtt3a.dll
-MKLINK paho-mqtt3as.dll %BUILD_HOME%\lib\paho-mqtt3as.dll
-MKLINK paho-mqtt3c.dll %BUILD_HOME%\lib\paho-mqtt3c.dll
-MKLINK paho-mqtt3cs.dll %BUILD_HOME%\lib\paho-mqtt3cs.dll
-```
-
-#### ARM 32 build
-
-For 32-bit arm systems, there are currently no prebuilt releases available. As such, a user is required to build the PAHO C api from source following the instructions [here](https://github.com/eclipse/paho.mqtt.c/blob/master/README.md#cross-compilation).
+[^1]: Required when building from source
 
 ### Installing a release
 
-It is recommended that a user install this interface through a release. This is completed in a number of steps
+1. Ensure [MQTT C api](https://github.com/eclipse/paho.mqtt.c/releases) (`paho.mqtt.c`) is installed.
+2. Make the MQTT library available from kdb+:
+   - Linux: Add the lib directory which includes `include` and `lib` to the `LD_LIBRARY_PATH` environment variable e.g. if unzipped to `/usr/local/Eclipse-Paho-MQTT-C/`, run:
+        ```bash
 
-1. Ensure you have downloaded/installed the `paho.mqtt.c` C api following the instructions [here](#third-party-library-installation)
-2. Download a release from [here](https://github.com/KxSystems/mqtt/releases) for your system architecture.
-3. Install script `hdf5.q` to `$QHOME`, and binary file `lib/libhdf5.(so|dll)` to `$QHOME/[mlw](64)`, by executing the following from the Release directory
-```
-## Linux/MacOS
-chmod +x install.sh && ./install.sh
+        $ export LD_LIBRARY_PATH=/usr/local/Eclipse-Paho-MQTT-C/lib/:$LD_LIBRARY_PATH
+        
+        ```
+   - MacOS: Add the lib directory which includes `include` and `lib`to the `DYLD_LIBRARY_PATH` environment variable e.g. if unzipped to `/Users/jim/eclipse-paho-mqtt-c/`, run:
+        ```bash
 
-## Windows
-install.bat
-```
-  
-### Building and installing from source
+        $ export DYLD_LIBRARY_PATH=/Users/jim/Eclipse-Paho-MQTT-C/lib/:$DYLD_LIBRARY_PATH
+      
+        ```
+   - Windows: Add the `paho-mqtt3a.dll`, `paho-mqtt3as.dll`, `paho-mqtt3c.dll` and `paho-mqtt3cs.dll` to the kdb+ lib directory e.g. `C:\q\w64` for 64-bit.
+3. Download the latest release of the mqtt interface from our [releases page](https://github.com/KxSystems/mqtt). To install shared library and q files, use:
 
-In order to successfully build and install this interface from source, the following environment variables must be set
+        # Linux/MacOS
+        $ ./install.sh
 
-1. `BUILD_HOME` = Location of a paho mqtt C api release
-2. `QHOME` = Q installation directory (directory containing `q.k`)
+        # Windows
+        > install.bat
 
-#### Linux/MacOS/ARM 32-bit
+    or copy `mqtt.q` to `QHOME`, then copy `mqttkdb.so` or `mqttkdb.dll` into `QHOME/[l|m|w]64`
 
-- Create an out-of-source directory for the CMake and object files
+### Building Interface From Source
 
-```bash
-mkdir cmake && cd cmake
-```
+#### Linux/MacOS
 
-- Generate the makefile (defaults to a generator for the native build system with a release target type)
+1. Download the latest release of the [MQTT C api](https://github.com/eclipse/paho.mqtt.c/releases) (`paho.mqtt.c`).
+2. Set an environment variable `MQTT_INSTALL_DIR` pointing to the location of the installed and unzipped release where `include` and `lib` are located. This environmental variable will be used to link the library to MQTT-kdb+ interface.
 
-```bash
-cmake ..
-```
+     ```bash
 
-- Build the interface shared object
+     ]$ mkdir paho_mqtt_c
+     ]$ tar xzf Eclipse-Paho-MQTT-C-1.3.8-Linux.tar.gz -C paho_mqtt_c/ --strip-components=1
+     ]$ cd paho_mqtt_c/
+     paho_mqtt_c]$ export MQTT_INSTALL_DIR=$(pwd)
 
-```bash
-make
-```
+     ```
 
-- Create the installation package into sub-directory `mqtt`
+3. For macOSX add the lib directory which includes `include` and `lib` to the `DYLD_LIBRARY_PATH` environment variable e.g. if unzipped to `/Users/jim/Eclipse-Paho-MQTT-C/`, run:
+   
+     ```bash
 
-```bash
-make install
-```
+     $ export DYLD_LIBRARY_PATH=/Users/jim/Eclipse-Paho-MQTT-C/lib/:$DYLD_LIBRARY_PATH
+     
+     ```
 
-- Install the package (copies the shared object to`$QHOME/[ml](64|32)` )
+4. Clone MQTT-kdb+ repository and build with `cmake`.
 
-```bash
-cd mqtt && ./install.sh
-```
+     ```bash
+
+     ]$ git clone https://github.com/KxSystems/mqtt.git
+     ]$ cd mqtt
+     mqtt]$ mkdir build && cd build
+     build]$ cmake ..
+     build]$ cmake --build . --target install
+
+     ```
+
+**Note:** `cmake --build . --target install` as used in the Linux/MacOS builds installs the required share object and q files to the `QHOME/[ml]64` and `QHOME` directories respectively. If you do not wish to install these files directly, you can execute `cmake --build .` instead of `cmake --build . --target install` and move the files from their build location at `build/mqttkdb`.
 
 #### Windows
 
-From a Visual Studio command prompt:
+1. Download the latest release of the [MQTT C api](https://github.com/eclipse/paho.mqtt.c/releases) (`paho.mqtt.c`).
+2. Set an environment variable `MQTT_INSTALL_DIR` pointing to the location of the installed and unzipped release where `include` and `lib` are located. This environmental variable will be used to link the library to MQTT-kdb+ interface.
+3. Create links to the paho dll's in the `%QHOME%\w64` directory.
 
-- Create an out-of-source directory for the CMake and object files.
+     ```bat
 
-```bash
-mkdir cmake && cd cmake
-```
+     > mkdir paho_mqtt_c
+     > 7z x eclipse-paho-mqtt-c-win64-1.3.8.zip -opaho_mqtt_c
+     > cd paho_mqtt_c
+     paho_mqtt_c> set MQTT_INSTALL_DIR=%cd%
+     paho_mqtt_c> cd %QHOME%\w64
+     w64> MKLINK paho-mqtt3a.dll %MQTT_INSTALL_DIR%\lib\paho-mqtt3a.dll
+     w64> MKLINK paho-mqtt3as.dll %MQTT_INSTALL_DIR%\lib\paho-mqtt3as.dll
+     w64> MKLINK paho-mqtt3c.dll %MQTT_INSTALL_DIR%\lib\paho-mqtt3c.dll
+     w64> MKLINK paho-mqtt3cs.dll %MQTT_INSTALL_DIR%\lib\paho-mqtt3cs.dll
 
-- Generate the VS solution
+     ```
 
-```bash
-cmake ..
-```
+4. Clone MQTT-kdb+ repository and build with `cmake`. Building the interface from source requires Visual Studio (assuming `-G "Visual Studio 15 2017 Win64"` is not necessary).
 
-- Build the interface DLL and create the installation package into sub-directory `mqtt`
+     ```bat
 
-```bash
-MSBuild.exe INSTALL.vcxproj /p:Configuration=Release /p:Platform=x64
-```
+     > git clone https://github.com/KxSystems/mqtt.git
+     > cd mqtt
+     mqtt> mkdir build && cd build
+     build> cmake --config Release ..
+     build> cmake --build . --config Release --target install
 
-- Install the package (copies the shared object to`%QHOME%/w64` )
+     ```
 
-```bash
-cd mqtt && install.bat
-```
+**Notes:** 
+
+1. `cmake --build . --config Release --target install` installs the required share object and q files to the `QHOME\w64` and `QHOME` directories respectively. If you do not wish to install these files directly, you can execute `cmake --build . --config Release` instead of `cmake --build . --config Release --target install` and move the files from their build location at `build/mqttkdb`.
+2. You can use flag `cmake -G "Visual Studio 16 2019" -A Win32` if building 32-bit version.
 
 #### Docker - Linux
 
 A sample docker file is provided in the `docker_linux` directory to create a CentOS 7 environment (including downloading the `paho.mqtt.c` 64 bit Linux release) before building and installing the kdb+ `mqtt` interface.
 
-The `BUILD_HOME` and `QHOME` directories are specified at the top of `mqtt_build.bat`, which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the library.
+The `MQTT_INSTALL_DIR` and `QHOME` directories are specified at the top of `mqtt_build.bat`, which sets up the environment specified in `Dockerfile.build` and invokes `mqtt_build.sh` to build the library.
+
+## Quick Start
+
+### Requirements
+
+- [Mosquitto broker](https://mosquitto.org/download/)
+
+### Start Mosquitto
+
+Start mosquitto on default port `localhost:1883`.
+
+```bash
+
+$ sudo systemctl start mosquitto
+
+```
+
+### Launch Consumer
+
+We assume you are in the source directory of MQTT-kdb+ interface.
+
+```bash
+
+mqtt]$ cd q
+q]$ q ../examples/consumer.q 
+
+```
+
+### Launch Producer
+
+In the same directory as the one launching a consumer, run:
+
+```bash
+
+q]$ q ../examples/producer.q
+
+```
+
+Then pubish a message by a timer, say every second:
+
+```q
+
+q)\t 1000
+
+```
+
+Going back to the console of consumer, now you can see received messages in `.mqtt.tab`:
+
+```q
+
+q).mqtt.tab
+topic  msg_sent                      msg_recv                      received_m..
+-----------------------------------------------------------------------------..
+topic1 2021.01.06D13:24:46.267356000 2021.01.06D13:24:46.267718000 topic1_3  ..
+topic2 2021.01.06D13:24:46.267450000 2021.01.06D13:24:46.368412000 topic2_3  ..
+topic1 2021.01.06D13:24:47.267366000 2021.01.06D13:24:47.268676000 topic1_4  ..
+topic2 2021.01.06D13:24:47.267624000 2021.01.06D13:24:47.372268000 topic2_4  ..
+topic1 2021.01.06D13:24:48.276623000 2021.01.06D13:24:48.277677000 topic1_5  ..
+topic2 2021.01.06D13:24:48.276801000 2021.01.06D13:24:48.377926000 topic2_5  ..
+topic1 2021.01.06D13:24:49.267324000 2021.01.06D13:24:49.268228000 topic1_6  ..
+topic2 2021.01.06D13:24:49.267482000 2021.01.06D13:24:49.368805000 topic2_6  ..
+topic1 2021.01.06D13:24:50.267684000 2021.01.06D13:24:50.268125000 topic1_7  ..
+topic2 2021.01.06D13:24:50.267804000 2021.01.06D13:24:50.368889000 topic2_7  ..
+
+```
 
 ## Documentation
 
