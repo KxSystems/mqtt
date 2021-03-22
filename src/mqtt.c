@@ -51,6 +51,20 @@ static char* getStringFromList(K propValues,int row, const char** value, char* e
   return errStr;
 }
 
+static char* getCharArrayAsStringFromList(K propValues,int row, const char** value, char* errStr)
+{
+  if ((int)(kK(propValues)[row]->t) == KC)
+  {
+    // Don't use strndup because it's not supported on early OS X builds
+    char* str = malloc(kK(propValues)[row]->n + 1);
+    memcpy(str, kC(kK(propValues)[row]), kK(propValues)[row]->n);
+    str[kK(propValues)[row]->n] = '\0';
+    *value = str;
+    return 0;
+  }
+  return errStr;
+}
+
 static char* getIntFromList(K propValues,int row, int* value, char* errStr)
 {
   if ((int)(kK(propValues)[row]->t) == -KI)
@@ -77,6 +91,7 @@ EXP K connX(K tcpconn,K pname, K opt){
     return krr("options");
   client = 0;
 
+  MQTTClient_willOptions will_opts = MQTTClient_willOptions_initializer;
   MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
 
   K propNames = (kK(opt)[0]);
@@ -115,6 +130,15 @@ EXP K connX(K tcpconn,K pname, K opt){
       errStr = getIntFromList(propValues,row,&conn_opts.maxInflightMessages,"maxInflightMessages type incorrect");
     else if (strcmp(kS(propNames)[row],"cleanstart")==0)
       errStr = getIntFromList(propValues,row,&conn_opts.cleanstart,"cleanstart type incorrect");
+    else if (strcmp(kS(propNames)[row],"lastWillTopic")==0){
+      conn_opts.will = &will_opts;
+      errStr = getStringFromList(propValues,row,&will_opts.topicName,"lastWillTopic type incorrect");}
+    else if (strcmp(kS(propNames)[row],"lastWillQos")==0)
+      errStr = getIntFromList(propValues,row,&will_opts.qos,"lastWillQos type incorrect");
+    else if (strcmp(kS(propNames)[row],"lastWillMessage")==0)
+      errStr = getCharArrayAsStringFromList(propValues,row,&will_opts.message,"lastWillMessage type incorrect");
+    else if (strcmp(kS(propNames)[row],"lastWillRetain")==0)
+      errStr = getIntFromList(propValues,row,&will_opts.retained,"lastWillRetain type incorrect");
     else
       errStr = "Unsupported conn opt name in dictionary";
   }
