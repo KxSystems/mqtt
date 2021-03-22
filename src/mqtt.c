@@ -56,8 +56,9 @@ static char* getCharArrayAsStringFromList(K propValues,int row, const char** val
   if ((int)(kK(propValues)[row]->t) == KC)
   {
     // Don't use strndup because it's not supported on early OS X builds
-    char* str = malloc(kK(propValues)[row]->n);
+    char* str = malloc(kK(propValues)[row]->n + 1);
     memcpy(str, kC(kK(propValues)[row]), kK(propValues)[row]->n);
+    str[kK(propValues)[row]->n] = '\0';
     *value = str;
     return 0;
   }
