@@ -1,0 +1,60 @@
+FROM alpine:3.14
+
+RUN mkdir -p /q/l64
+RUN mkdir -p /source/paho.mqtt.c
+RUN mkdir -p /source/mqtt/examples
+RUN mkdir -p /source/mqtt/q
+RUN mkdir -p /source/mqtt/src
+RUN mkdir -p /source/mqtt/include
+
+COPY docker_linux/mqtt_build.sh /source
+
+COPY CMakeLists.txt /source/mqtt
+COPY docker_linux/build_libpaho.sh /source/mqtt
+COPY install.sh /source/mqtt
+COPY README.md /source/mqtt
+COPY LICENSE /source/mqtt
+
+COPY examples/ /source/mqtt/examples
+COPY src/ /source/mqtt/src
+COPY include/ /source/mqtt/include
+COPY q/mqtt.q /q/
+
+ENV QHOME /q
+ENV PATH /q/l64:$PATH
+ENV LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH
+ENV MQTT_INSTALL_DIR /source/paho.mqtt.c
+ENV BUILD_HOME /source/paho.mqtt.c
+
+RUN apk add --update && \
+    apk add build-base && \	
+    apk add cmake && \
+    apk add make && \
+    apk add openssl-dev && \
+    apk add wget && \
+    apk add gcompat && \    
+	apk add libnsl && \
+    cd /source && \
+	
+# MQTT Libs
+    /bin/sh /source/mqtt/build_libpaho.sh && \
+
+# Clean up    
+    apk del gcc && \
+    apk del cmake && \
+    apk del make && \
+    apk del wget && \
+	apk del build-base && \	
+    rm -rf /source/mqtt_build.sh /source/paho.mqtt.c /source/v1.3.9* /source/mqtt/CmakeLists.txt 
+	
+## Update this section here to add kdb+
+#COPY q/k4.lic /q/
+#COPY q/q.k /q/
+#COPY q/l64/q /q/l64
+
+## If running licensed version of kdb, you may also need taskset to start the process
+# apk add util-linux
+
+WORKDIR /source
+
+ENTRYPOINT ["/bin/sh"]
