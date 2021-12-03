@@ -93,6 +93,7 @@ EXP K connX(K tcpconn,K pname, K opt){
 
   MQTTClient_willOptions will_opts = MQTTClient_willOptions_initializer;
   MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+  MQTTClient_SSLOptions ssl_opts = MQTTClient_SSLOptions_initializer;
 
   K propNames = (kK(opt)[0]);
   K propValues = (kK(opt)[1]);
@@ -139,6 +140,15 @@ EXP K connX(K tcpconn,K pname, K opt){
       errStr = getCharArrayAsStringFromList(propValues,row,&will_opts.message,"lastWillMessage type incorrect");
     else if (strcmp(kS(propNames)[row],"lastWillRetain")==0)
       errStr = getIntFromList(propValues,row,&will_opts.retained,"lastWillRetain type incorrect");
+    else if (strcmp(kS(propNames)[row],"trustStore")==0){
+      conn_opts.ssl = &ssl_opts;
+      errStr = getStringFromList(propValues,row,&ssl_opts.trustStore,"trustStore type incorrect");}
+    else if (strcmp(kS(propNames)[row],"keyStore")==0)
+      errStr = getStringFromList(propValues,row,&ssl_opts.keyStore,"keyStore type incorrect");
+    else if (strcmp(kS(propNames)[row],"privateKey")==0)
+      errStr = getStringFromList(propValues,row,&ssl_opts.privateKey,"privateKey type incorrect");
+    else if (strcmp(kS(propNames)[row],"sslCApath")==0)
+      errStr = getStringFromList(propValues,row,&ssl_opts.CApath,"CApath type incorrect");
     else
       errStr = "Unsupported conn opt name in dictionary";
   }

@@ -46,18 +46,6 @@ set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -DKXVER=3")
 file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/c/c/k.h" "${PROJECT_SOURCE_DIR}/include/k.h")
 
 # Find dependencies
-find_library(MQTT3A_LIBRARY
-    NAMES paho-mqtt3a
-    HINTS "$ENV{MQTT_INSTALL_DIR}/lib/"
-)
-find_library(MQTT3AS_LIBRARY
-    NAMES paho-mqtt3as
-    HINTS "$ENV{MQTT_INSTALL_DIR}/lib/"
-)
-find_library(MQTT3C_LIBRARY
-    NAMES paho-mqtt3c
-    HINTS "$ENV{MQTT_INSTALL_DIR}/lib/"
-)
 find_library(MQTT3CS_LIBRARY
     NAMES paho-mqtt3cs
     HINTS "$ENV{MQTT_INSTALL_DIR}/lib/"
@@ -91,7 +79,7 @@ IF(APPLE)
 endif()
 
 # Link dependent libraries
-target_link_libraries(${MY_LIBRARY_NAME} ${MQTT3A_LIBRARY} ${MQTT3AS_LIBRARY} ${MQTT3C_LIBRARY} ${MQTT3CS_LIBRARY} ${Q_LIBRARY})
+target_link_libraries(${MY_LIBRARY_NAME} ${MQTT3CS_LIBRARY} ${Q_LIBRARY})
 
 ##%% Installation %%##vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv#
 
