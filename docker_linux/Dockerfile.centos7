@@ -24,6 +24,9 @@ ENV BUILD_HOME /source/paho.mqtt.c
 COPY mqtt_build.sh /source
 RUN /source/mqtt_build.sh
 
+RUN cd /tmp/ && wget https://cmake.org/files/v3.12/cmake-3.12.3.tar.gz && tar zxvf cmake-3.* && cd cmake-3.* && ./bootstrap --prefix=/usr/local && make && make install && rm /tmp/cmake-3.12.3.tar.gz
+RUN yum -y install epel-release && yum -y install mosquitto
+
 WORKDIR /source
 
 CMD ["/bin/bash"]
