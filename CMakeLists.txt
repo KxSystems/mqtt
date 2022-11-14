@@ -106,9 +106,9 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 endif()
 
 # Always build package
-file(COPY README.md LICENSE ${INSTALL_SCRIPT} DESTINATION ${PROJECT_BINARY_DIR}/mqtt/)
-file(COPY examples/ DESTINATION ${PROJECT_BINARY_DIR}/mqtt/examples/)
-file(COPY q/ DESTINATION ${PROJECT_BINARY_DIR}/mqtt/q/)
+file(COPY README.md LICENSE ${INSTALL_SCRIPT} DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/)
+file(COPY examples/ DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/examples/)
+file(COPY q/ DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/q/)
 
 # Copy built shared object into package directory after build instead of during installation
 add_custom_command(TARGET ${MY_LIBRARY_NAME}
