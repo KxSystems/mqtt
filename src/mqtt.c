@@ -73,6 +73,22 @@ static char* getIntFromList(K propValues,int row, int* value, char* errStr)
   return 0;
 }
 
+static int ssl_error_cb(const char *str, size_t len, void *u) {
+  fprintf(stderr,"mqtt ssl error: %.*s\n",(int)len,str);
+  return 0;
+}
+
+static void freeOpts(MQTTClient_connectOptions* conn_opts){
+  free((void*)conn_opts->username);
+  free((void*)conn_opts->password);
+  free((void*)conn_opts->ssl->trustStore);
+  free((void*)conn_opts->ssl->keyStore);
+  free((void*)conn_opts->ssl->privateKey);
+  free((void*)conn_opts->ssl->privateKeyPassword);
+  free((void*)conn_opts->ssl->enabledCipherSuites);
+  free((void*)conn_opts->ssl->CApath);
+}
+
 /* Establish a tcp connection from a q process to mqtt client
  * tcpconn = tcp connection being connected to (symbol)
  * pname   = name to be associated with the connecting process (symbol)
@@ -90,6 +106,7 @@ EXP K connX(K tcpconn,K pname, K opt){
 
   MQTTClient_willOptions will_opts = MQTTClient_willOptions_initializer;
   MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+  MQTTClient_SSLOptions ssl_opts = MQTTClient_SSLOptions_initializer;
 
   K propNames = (kK(opt)[0]);
   K propValues = (kK(opt)[1]);
@@ -106,7 +123,6 @@ EXP K connX(K tcpconn,K pname, K opt){
   {
     if ((kS(propNames)[row])[0] == '\0')
       continue;
-
     if (strcmp(kS(propNames)[row],"username")==0)
       errStr = getStringFromList(propValues,row,&conn_opts.username,"username type incorrect");
     else if (strcmp(kS(propNames)[row],"password")==0)
@@ -136,28 +152,40 @@ EXP K connX(K tcpconn,K pname, K opt){
       errStr = getCharArrayAsStringFromList(propValues,row,&will_opts.message,"lastWillMessage type incorrect");
     else if (strcmp(kS(propNames)[row],"lastWillRetain")==0)
       errStr = getIntFromList(propValues,row,&will_opts.retained,"lastWillRetain type incorrect");
+    else if (strcmp(kS(propNames)[row],"trustStore")==0)
+      errStr = getStringFromList(propValues,row,&ssl_opts.trustStore,"trustStore type incorrect");
+    else if (strcmp(kS(propNames)[row],"keyStore")==0)
+      errStr = getStringFromList(propValues,row,&ssl_opts.keyStore,"keyStore type incorrect");
+    else if (strcmp(kS(propNames)[row],"privateKey")==0)
+      errStr = getStringFromList(propValues,row,&ssl_opts.privateKey,"privateKey type incorrect");
+    else if (strcmp(kS(propNames)[row],"privateKeyPassword")==0)
+      errStr = getStringFromList(propValues,row,&ssl_opts.privateKeyPassword,"privateKeyPassword type incorrect");
+    else if (strcmp(kS(propNames)[row],"enabledCipherSuites")==0)
+      errStr = getStringFromList(propValues,row,&ssl_opts.enabledCipherSuites,"enabledCipherSuites type incorrect");
+    else if (strcmp(kS(propNames)[row],"enableServerCertAuth")==0)
+      errStr = getIntFromList(propValues,row,&ssl_opts.enableServerCertAuth,"enableServerCertAuth type incorrect");
+    else if (strcmp(kS(propNames)[row],"sslVersion")==0)
+      errStr = getIntFromList(propValues,row,&ssl_opts.sslVersion,"sslVersion type incorrect");
+    else if (strcmp(kS(propNames)[row],"verify")==0)
+      errStr = getIntFromList(propValues,row,&ssl_opts.verify,"verify type incorrect");
+    else if (strcmp(kS(propNames)[row],"CApath")==0)
+      errStr = getStringFromList(propValues,row,&ssl_opts.CApath,"CApath type incorrect");
     else
       errStr = "Unsupported conn opt name in dictionary";
   }
 
-  if (errStr != 0)
-  {
-    free((void*)conn_opts.username);
-    free((void*)conn_opts.password);
-    return krr(errStr);
-  }
+  ssl_opts.ssl_error_cb = *ssl_error_cb;
+  conn_opts.ssl = &ssl_opts;
+
+  if(errStr)
+    return freeOpts(&conn_opts),krr(errStr);
 
   if(MQTTCLIENT_SUCCESS != (err = MQTTClient_create(&client, tcpconn->s, pname->s, MQTTCLIENT_PERSISTENCE_NONE, NULL)))
-  {
-    free((void*)conn_opts.username);
-    free((void*)conn_opts.password);
-    return krr((S)MQTTClient_strerror(err));
-  }
+    return freeOpts(&conn_opts),krr((S)MQTTClient_strerror(err));
 
   MQTTClient_setCallbacks(client, NULL, disconn, msgrcvd, msgsent);
   err = MQTTClient_connect(client, &conn_opts);
-  free((void*)conn_opts.username);
-  free((void*)conn_opts.password);
+  freeOpts(&conn_opts);
 
   if(MQTTCLIENT_SUCCESS != err)
     return krr((S)MQTTClient_strerror(err));
