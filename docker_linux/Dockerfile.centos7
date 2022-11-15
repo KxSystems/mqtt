@@ -18,7 +18,7 @@ ENV QHOME /q
 ENV PATH /q/l64:$PATH
 ENV LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH
 
-RUN cd /source && wget https://github.com/eclipse/paho.mqtt.c/releases/download/v1.3.2/Eclipse-Paho-MQTT-C-1.3.2-Linux.tar.gz && tar xvf Eclipse-Paho-MQTT-C-1.3.2-Linux.tar.gz -C ./paho.mqtt.c --strip-components=1
+RUN cd /source && wget https://github.com/eclipse/paho.mqtt.c/releases/download/v1.3.11/Eclipse-Paho-MQTT-C-1.3.11-Linux.tar.gz && tar xvf Eclipse-Paho-MQTT-C-1.3.11-Linux.tar.gz -C ./paho.mqtt.c --strip-components=1
 ENV BUILD_HOME /source/paho.mqtt.c
 
 COPY mqtt_build.sh /source

@@ -23,7 +23,7 @@ MQTT is used commonly for constrained devices with low-bandwidth, high-latency o
 ### Requirements
 
 * kdb+ >= 3.5 64-bit(Linux/MacOS/Windows) and 32-bit ARM
-* [paho.mqtt.c](https://github.com/eclipse/paho.mqtt.c) >= 1.3.2
+* [paho.mqtt.c](https://github.com/eclipse/paho.mqtt.c) >= 1.3.11
 * CMake >= 3.1 [^1]
 
 [^1]: Required when building from source
