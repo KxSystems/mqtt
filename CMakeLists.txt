@@ -8,6 +8,7 @@ project(mqttkdb C)
 
 # Name of shared object
 set(MY_LIBRARY_NAME mqttkdb)
+set(MY_SSL_LIBRARY_NAME mqttkdb_ssl)
 
 # Dispay settings
 message(STATUS "Generator : ${CMAKE_GENERATOR}")
@@ -31,9 +32,17 @@ add_library(${MY_LIBRARY_NAME} SHARED
     src/mqtt.c
     src/socketpair.c
 )
+add_library(${MY_SSL_LIBRARY_NAME} SHARED
+    src/mqtt.c
+    src/socketpair.c
+)
 
 # Specify include directories
 target_include_directories (${MY_LIBRARY_NAME} PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+    $ENV{MQTT_INSTALL_DIR}/include
+)
+target_include_directories (${MY_SSL_LIBRARY_NAME} PRIVATE
     ${PROJECT_SOURCE_DIR}/include
     $ENV{MQTT_INSTALL_DIR}/include
 )
@@ -48,6 +57,10 @@ file(DOWNLOAD "https://github.com/KxSystems/kdb/raw/master/c/c/k.h" "${PROJECT_S
 # Find dependencies
 find_library(MQTT3C_LIBRARY
     NAMES paho-mqtt3c
+    HINTS "$ENV{MQTT_INSTALL_DIR}/lib/"
+)
+find_library(MQTT3CS_LIBRARY
+    NAMES paho-mqtt3cs
     HINTS "$ENV{MQTT_INSTALL_DIR}/lib/"
 )
 
@@ -72,14 +85,19 @@ if(APPLE)
 endif()
 set_target_properties(${MY_LIBRARY_NAME} PROPERTIES PREFIX "")
 set_target_properties(${MY_LIBRARY_NAME} PROPERTIES SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
+set_target_properties(${MY_SSL_LIBRARY_NAME} PROPERTIES PREFIX "")
+set_target_properties(${MY_SSL_LIBRARY_NAME} PROPERTIES SUFFIX ${CMAKE_SHARED_LIBRARY_SUFFIX})
+target_compile_definitions(${MY_SSL_LIBRARY_NAME} PRIVATE -DMQTT_SSL)
 
 # Link flag
 IF(APPLE)
    set_target_properties(${MY_LIBRARY_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+   set_target_properties(${MY_SSL_LIBRARY_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif()
 
 # Link dependent libraries
 target_link_libraries(${MY_LIBRARY_NAME} ${MQTT3C_LIBRARY} ${Q_LIBRARY})
+target_link_libraries(${MY_SSL_LIBRARY_NAME} ${MQTT3CS_LIBRARY} ${Q_LIBRARY})
 
 ##%% Installation %%##vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv#
 
@@ -116,7 +134,15 @@ add_custom_command(TARGET ${MY_LIBRARY_NAME}
     COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${MY_LIBRARY_NAME}>" ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/lib/${MY_LIBRARY_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
     DEPENDS ${MY_LIBRARY_NAME}
 )
+add_custom_command(TARGET ${MY_SSL_LIBRARY_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${MY_SSL_LIBRARY_NAME}>" ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/lib/${MY_SSL_LIBRARY_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
+    DEPENDS ${MY_SSL_LIBRARY_NAME}
+)
+
+
 
 # Install at Release
 install(TARGETS ${MY_LIBRARY_NAME} DESTINATION "$ENV{QHOME}/${OSFLAG}${BITNESS}/" CONFIGURATIONS Release)
+install(TARGETS ${MY_SSL_LIBRARY_NAME} DESTINATION "$ENV{QHOME}/${OSFLAG}${BITNESS}/" CONFIGURATIONS Release)
 install(DIRECTORY "q/" DESTINATION "$ENV{QHOME}" CONFIGURATIONS Release)

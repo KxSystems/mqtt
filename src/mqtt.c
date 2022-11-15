@@ -2,7 +2,11 @@
 #include <winsock2.h>
 #include <windows.h>
 #pragma comment(lib,"ws2_32.lib")
+#ifdef MQTT_SSL
+#pragma comment(lib,"paho-mqtt3cs.lib")
+#else
 #pragma comment(lib,"paho-mqtt3c.lib")
+#endif
 #pragma comment(lib,"q.lib")
 #define EXP __declspec(dllexport)
 static SOCKET spair[2];
