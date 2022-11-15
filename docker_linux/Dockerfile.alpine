@@ -45,7 +45,7 @@ RUN apk add --update && \
     apk del make && \
     apk del wget && \
 	apk del build-base && \	
-    rm -rf /source/mqtt_build.sh /source/paho.mqtt.c /source/v1.3.9* /source/mqtt/CmakeLists.txt 
+    rm -rf /source/mqtt_build.sh /source/paho.mqtt.c /source/v1.3.11* /source/mqtt/CmakeLists.txt
 	
 ## Update this section here to add kdb+
 #COPY q/k4.lic /q/

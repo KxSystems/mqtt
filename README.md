@@ -44,7 +44,7 @@ MQTT is used commonly for constrained devices with low-bandwidth, high-latency o
         $ export DYLD_LIBRARY_PATH=/Users/jim/Eclipse-Paho-MQTT-C/lib/:$DYLD_LIBRARY_PATH
       
         ```
-   - Windows: Add the `paho-mqtt3c.dll` to the kdb+ lib directory e.g. `C:\q\w64` for 64-bit.
+   - Windows: Add the `paho-mqtt3c.dll` and `paho-mqtt3cs.dll` to the kdb+ lib directory e.g. `C:\q\w64` for 64-bit.
 3. Download the latest release of the mqtt interface from our [releases page](https://github.com/KxSystems/mqtt). To install shared library and q files, use:
 
         # Linux/MacOS
@@ -65,7 +65,7 @@ MQTT is used commonly for constrained devices with low-bandwidth, high-latency o
      ```bash
 
      ]$ mkdir paho_mqtt_c
-     ]$ tar xzf Eclipse-Paho-MQTT-C-1.3.8-Linux.tar.gz -C paho_mqtt_c/ --strip-components=1
+     ]$ tar xzf Eclipse-Paho-MQTT-C-1.3.11-Linux.tar.gz -C paho_mqtt_c/ --strip-components=1
      ]$ cd paho_mqtt_c/
      paho_mqtt_c]$ export MQTT_INSTALL_DIR=$(pwd)
 
@@ -102,11 +102,12 @@ MQTT is used commonly for constrained devices with low-bandwidth, high-latency o
      ```bat
 
      > mkdir paho_mqtt_c
-     > 7z x eclipse-paho-mqtt-c-win64-1.3.8.zip -opaho_mqtt_c
+     > 7z x eclipse-paho-mqtt-c-win64-1.3.11.zip -opaho_mqtt_c
      > cd paho_mqtt_c
      paho_mqtt_c> set MQTT_INSTALL_DIR=%cd%
      paho_mqtt_c> cd %QHOME%\w64
      w64> MKLINK paho-mqtt3c.dll %MQTT_INSTALL_DIR%\lib\paho-mqtt3c.dll
+     w64> MKLINK paho-mqtt3cs.dll %MQTT_INSTALL_DIR%\lib\paho-mqtt3cs.dll
 
      ```
 
