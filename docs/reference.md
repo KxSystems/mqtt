@@ -1,33 +1,24 @@
----
-title: Function reference | MQTT | Interfaces | Documentation for kdb+ and q
-keywords: mqtt, api, consumer, fusion, interface, broker, message, library, telemetry, producer, q
----
 # MQTT function reference
 
-:fontawesome-brands-github: 
-[KxSystems/mqtt](https://github.com/KxSystems/mqtt)
-<br>
-:fontawesome-solid-globe:
+:globe_with_meridians:
 [MQTT manual](https://mosquitto.org/man/mqtt-7.html)
 
 The following functions are exposed in the `.mqtt` namespace.
 They allow you to interact with MQTT brokers and send and receive messages.
 
-<div markdown="1" class="typewriter">
-.mqtt   **MQTT interface**
+`.mqtt`   **MQTT interface**
 
-Broker interaction
-  [conn](#mqttconn)      connect to a MQTT broker
-  [pub](#mqttpub)       publish a message to a topic
-  [pubx](#mqttpubx)      publish a message to a topic controlling qos and ret
-  [sub](#mqttsub)       subscribe to a topic
-  [unsub](#mqttunsub)     unsubscribe from a topic
+**Broker interaction**<br>
+[`conn`](#mqttconn)      connect to a MQTT broker<br>
+[`pub`](#mqttpub)       publish a message to a topic<br>
+[`pubx`](#mqttpubx)      publish a message to a topic controlling qos and ret<br>
+[`sub`](#mqttsub)       subscribe to a topic<br>
+[`unsub`](#mqttunsub)     unsubscribe from a topic
 
-Callback functions
-  [disconn](#mqttdisconn)   manage disconnection events
-  [msgrecv](#mqttmsgrecv)   manage receipt of messages
-  [msgsent](#mqttmsgsent)   manage sending of messages
-</div>
+**Callback functions**<br>
+[`disconn`](#mqttdisconn)   manage disconnection events<br>
+[`msgrecv`](#mqttmsgrecv)   manage receipt of messages<br>
+[`msgsent`](#mqttmsgsent)   manage sending of messages
 
 The callbacks here to handle disconnections and the sending and receipt of messages are minimal implementations. 
 
@@ -50,7 +41,7 @@ Where
 
 returns a failure notice if connnection to host could not be established otherwise does not return output.
 
-!!! detail "The `opts` parameter lets you provide a username and password to brokers that require them. Further options will be added."
+> The `opts` parameter lets you provide a username and password to brokers that require them. Further options will be added.
 
 Within MQTT the Client Identifier identifies a client to the server. This must be unique to ensure connections are appropriately established. Within this interface the parameter `name` maps to `ClientID` and as such each defined `name` must be unique across all processes connecting to a broker.
 
@@ -124,7 +115,7 @@ q).mqtt.msgrcvd:{0N!"Message - '",string[y],"' received from, ",string[x];}
 _Handle callback on successfuly sending a message to an MQTT broker_
 
 ```txt
-.mqtt.msgsent[token]
+.mqtt.msgsent token
 ```
 
 Where `token` is a long representing the `MqttDeliveryToken` to monitor delivery
@@ -166,12 +157,12 @@ q).mqtt.pub[`topic1;"This is a test message"];
 (`msgsent;1)
 ```
 
-??? detail "This function is a projection of the function `.mqtt.pubx` defined below."
-
-    Where 
-
-  	1. `kqos` is set to 1. The broker/client will deliver the message at least once, with confirmation required.
-  	2. `kret` is set to `0b`. Messages are not retained after sending.
+> This function is a projection of the function `.mqtt.pubx` defined below.
+> 
+> Where 
+> 
+> 1. `kqos` is set to 1. The broker/client will deliver the message at least once, with confirmation required.
+> 2. `kret` is set to `0b`. Messages are not retained after sending.
 
 
 ## `.mqtt.pubx`
@@ -206,7 +197,7 @@ q).mqtt.pubx[`topic2;"Sending test message";2;1b]
 _Subscribe to a topic on a Mosquitto broker process_
 
 ```txt
-.mqtt.sub[topic]
+.mqtt.sub topic
 ```
 
 Where `topic` is a symbol denoting the topic that the process should listen to, returns a callback to the process when a message is received on topic stating that the message was received and what that message is.
@@ -226,7 +217,7 @@ q).mqtt.sub[`topic1]
 _Unsubscribe from a Mosquitto broker topic_
 
 ```txt
-.mqtt.unsub[topic]
+.mqtt.unsub topic
 ```
 
 Where `topic` is a symbol denoting the topic to be unsubscribed from, does not return a message on correct application, but signals an error on incorrect input.

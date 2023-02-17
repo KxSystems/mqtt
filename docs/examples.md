@@ -1,17 +1,9 @@
----
-title: Interface example | MQTT | Interfaces | Documentation for kdb+ and q
-keywords: mqtt, api, consumer, fusion, interface, broker, message, library, telemetry, producer, q
----
 # MQTT interface example
-
-:fontawesome-brands-github:
-[KxSystems/mqtt](https://github.com/KxSystems/mqtt)
-
 
 
 This example requires 
 
--   the MQTT interface [installed](https://github.com/kxsystems/mqtt/blob/master/README.md)
+-   the MQTT interface [installed](../README.md#installation)
 -   a Mosquitto broker [available on port 1883](https://mosquitto.org/download/)
 
 
@@ -24,7 +16,7 @@ Open a Mosquitto broker on the default localhost `tcp://localhost:1883`.
 
 ## Start two kdb+ processes
 
-From the examples folder, start two q processes.
+From the `examples` folder, start two q processes.
 
 
 ## Load the test producer 
