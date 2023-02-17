@@ -40,7 +40,7 @@ The interface is currently available under an Apache 2.0 license and is supporte
 
 
 :point_right:
-[Issues and feature requests](../../issues) 
+[Issues and feature requests](../../../issues) 
 
 :point_right:
 [Guide to contributing](../CONTRIBUTING.md)
