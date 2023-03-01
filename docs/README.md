@@ -34,13 +34,3 @@ Exposed functionality includes
 
 > Tip: To run the examples you will need a MQTT broker [installed and running locally](https://mosquitto.org/download/).
 
-## Status
-
-The interface is currently available under an Apache 2.0 license and is supported on a best-efforts basis by the KX Fusion team. The interface is currently in active development, with additional functionality released on an ongoing basis.
-
-
-:point_right:
-[Issues and feature requests](../../../issues) 
-
-:point_right:
-[Guide to contributing](../CONTRIBUTING.md)

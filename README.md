@@ -18,6 +18,10 @@ Message Queueing Telemetry Transport (MQTT) is a machine-to-machine/IOT connecti
 
 MQTT is used commonly for constrained devices with low-bandwidth, high-latency or unreliable networks.
 
+## API Documentation
+
+:open_file_folder: [`docs`](docs)
+
 ## Installation
 
 ### Requirements
@@ -204,15 +208,13 @@ topic1 2021.01.06D13:24:50.267684000 2021.01.06D13:24:50.268125000 topic1_7  ..
 topic2 2021.01.06D13:24:50.267804000 2021.01.06D13:24:50.368889000 topic2_7  ..
 ```
 
-## Documentation
-
-:open_file_folder: [`docs`](docs)
-
 
 ## Status
 
-The MQTT interface is provided here under an Apache 2.0 license.
+The interface is currently available under an Apache 2.0 license and is supported on a best-efforts basis by the KX Fusion team. The interface is currently in active development, with additional functionality released on an ongoing basis.
 
-If you find issues with the interface or have feature requests, please [raise an issue](../..//issues).
+:point_right:
+[Issues and feature requests](../../../issues) 
 
-To contribute to this project, please follow the [contribution guide](CONTRIBUTING.md).
+:point_right:
+[Guide to contributing](../CONTRIBUTING.md)
