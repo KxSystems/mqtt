@@ -2,8 +2,8 @@
 	
 cd /source
 
-wget https://github.com/eclipse/paho.mqtt.c/archive/refs/tags/v1.3.11.tar.gz
-tar xvf v1.3.11.tar.gz -C ./paho.mqtt.c --strip-components=1
+wget https://github.com/eclipse/paho.mqtt.c/archive/refs/tags/v1.3.12.tar.gz
+tar xvf v1.3.12.tar.gz -C ./paho.mqtt.c --strip-components=1
 
 cd paho.mqtt.c
 

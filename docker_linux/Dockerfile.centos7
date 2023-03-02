@@ -6,6 +6,7 @@ RUN yum -y install gcc && \
     yum -y install make && \
     yum -y install vim && \
     yum -y install openssl-devel && \
+    yum -y install unzip && \
     yum -y install wget
 
 RUN yum clean all
@@ -18,11 +19,11 @@ ENV QHOME /q
 ENV PATH /q/l64:$PATH
 ENV LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH
 
-RUN cd /source && wget https://github.com/eclipse/paho.mqtt.c/releases/download/v1.3.11/Eclipse-Paho-MQTT-C-1.3.11-Linux.tar.gz && tar xvf Eclipse-Paho-MQTT-C-1.3.11-Linux.tar.gz -C ./paho.mqtt.c --strip-components=1
+RUN cd /source && wget https://github.com/eclipse/paho.mqtt.c/releases/download/v1.3.12/Eclipse-Paho-MQTT-C-1.3.12-Linux.tar.gz.zip && unzip Eclipse-Paho-MQTT-C-1.3.12-Linux.tar.gz.zip && tar xvf Eclipse-Paho-MQTT-C-1.3.12-Linux.tar.gz -C ./paho.mqtt.c --strip-components=1
 ENV BUILD_HOME /source/paho.mqtt.c
 
 COPY mqtt_build.sh /source
-RUN /source/mqtt_build.sh
+RUN chmod u+x /source/mqtt_build.sh && /source/mqtt_build.sh
 
 RUN cd /tmp/ && wget https://cmake.org/files/v3.12/cmake-3.12.3.tar.gz && tar zxvf cmake-3.* && cd cmake-3.* && ./bootstrap --prefix=/usr/local && make && make install && rm /tmp/cmake-3.12.3.tar.gz
 RUN yum -y install epel-release && yum -y install mosquitto
