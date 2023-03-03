@@ -1,4 +1,4 @@
-# MQTT function reference
+# MQTT kdb+ library function reference
 
 :globe_with_meridians:
 [MQTT manual](https://mosquitto.org/man/mqtt-7.html)
