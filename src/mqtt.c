@@ -347,6 +347,8 @@ static int msgrcvd(void* context, char* topic, int unused, MQTTClient_message* m
   memcpy(p += topic_len, mq_msg->payload, mq_msg->payloadlen);
   send(spair[1], (char*)msg, msg_size, 0);
   free(msg);
+  MQTTClient_freeMessage(&mq_msg);
+  MQTTClient_free(topic);
   return 1;
 }
 
