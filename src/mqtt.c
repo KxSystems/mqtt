@@ -305,7 +305,7 @@ EXP K unsub(K topic){
 }
 
 // Callback data structure
-struct CallbackDataStr{
+typedef struct CallbackDataStr{
   union{
     char reserved[8];   // reserve space for flags, aligned to 64 bit word
     enum{
@@ -314,36 +314,33 @@ struct CallbackDataStr{
       MSG_TYPE_DISCONN
     } msg_type;
   } header;
-
-  long body_size;
+  union{
+    long size;
+    MQTTClient_deliveryToken dt;
+  } body;
   // Start of dynamic data
-};
-typedef struct CallbackDataStr CallbackData;
+} CallbackData;
 
 // Function definitions for above prototypes
 static void msgsent(void* context, MQTTClient_deliveryToken dt){
   (void)context;
   // Body contains: <dt>
-  const long msg_size = sizeof(CallbackData) + sizeof(dt);
-  CallbackData* msg = malloc(msg_size);
-  msg->body_size = sizeof(dt);
-  msg->header.msg_type = MSG_TYPE_SEND;
-  memcpy(&(msg[1]), &dt, sizeof(dt));
-  send(spair[1], (char*)msg, msg_size, 0);
-  free(msg);
+  CallbackData msg;
+  msg.body.dt = dt;
+  msg.header.msg_type = MSG_TYPE_SEND;
+  send(spair[1], &msg, sizeof(CallbackData), 0);
 }
 
 static int msgrcvd(void* context, char* topic, int unused, MQTTClient_message* mq_msg){
   // Body contains: <topic_len><topic><payload>
   (void)unused;(void)context;
-  long topic_len = strlen(topic);
-  long msg_size = sizeof(CallbackData) + sizeof(topic_len) + topic_len + mq_msg->payloadlen;
+  long topic_len = strlen(topic)+1;
+  long msg_size = sizeof(CallbackData) + topic_len + mq_msg->payloadlen;
   CallbackData* msg = malloc(msg_size);
-  msg->body_size = sizeof(topic_len) + topic_len + mq_msg->payloadlen;
+  msg->body.size = topic_len + mq_msg->payloadlen;
   msg->header.msg_type = MSG_TYPE_RCVD;
   char* p = (char*)&(msg[1]);
-  memcpy(p, &topic_len, sizeof(topic_len));
-  memcpy(p += sizeof(topic_len), topic, topic_len);
+  memcpy(p, topic, topic_len);
   memcpy(p += topic_len, mq_msg->payload, mq_msg->payloadlen);
   send(spair[1], (char*)msg, msg_size, 0);
   free(msg);
@@ -355,12 +352,10 @@ static int msgrcvd(void* context, char* topic, int unused, MQTTClient_message* m
 static void disconn(void* context, char* cause){
   (void)context;(void)cause;
   // Body contains: <>
-  const long msg_size = sizeof(CallbackData);
-  CallbackData* msg = malloc(msg_size);
-  msg->body_size = 0;
-  msg->header.msg_type = MSG_TYPE_DISCONN;
-  send(spair[1], (char*)msg, msg_size, 0);
-  free(msg);
+  CallbackData msg;
+  msg.body.size = 0;
+  msg.header.msg_type = MSG_TYPE_DISCONN;
+  send(spair[1], &msg, sizeof(CallbackData), 0);
 }
 
 // release K object (print any errors) 
@@ -373,23 +368,18 @@ static void pr0(K x){
 }
 
 // Callback function definitions
-void qmsgsent(char* p,long sz){
-  (void)sz;
-  K dt = kj(*(MQTTClient_deliveryToken*)p);
-  pr0(k(0, (char*)".mqtt.msgsent", dt, (K)0));
+void qmsgsent(MQTTClient_deliveryToken p){
+  pr0(k(0, (char*)".mqtt.msgsent", kj(p), (K)0));
 }
 
 void qmsgrcvd(char* p,long sz){
-  long tsz = *(long*)p;
-  p += sizeof(long);
-  K topic = kpn(p,tsz);
-  p += tsz;
-  K msg = kpn(p, sz - (tsz+sizeof(long)));
+  K topic = kp(p);
+  p += topic->n+1;
+  K msg = kpn(p, sz - (topic->n+1));
   pr0(k(0, (char*)".mqtt.msgrcvd", topic, msg, (K)0));
 }
 
-void qdisconn(char* p,long sz){
-  (void)p;(void)sz;
+void qdisconn(){
   pr0(k(0, (char*)".mqtt.disconn", ktn(0,0), (K)0));
 }
 
@@ -399,41 +389,38 @@ void qdisconn(char* p,long sz){
  * callback function set to loop on socketpair connection
 */
 K mqttCallback(int fd){
-  CallbackData cb_hdr;
-  long rc = recv(fd, (char*)&cb_hdr, sizeof(cb_hdr), 0);
-  const long expected = cb_hdr.body_size;
-  if (rc < (long)sizeof(cb_hdr) || expected < 0){
-    fprintf(stderr, "recv(1) error: %li, expected: %li\n", rc, expected);
+  CallbackData cb_data;
+  long rc = recv(fd, (char*)&cb_data, sizeof(cb_data), 0);
+  if (rc < (long)sizeof(cb_data)){
+    fprintf(stderr, "recv(1) error: %li\n", rc);
     return (K)0;
   }
-
-  // Don't use MSG_WAITALL since async sd1(-fd, ...) was used.  So call recv until we have 
-  // the expected number of bytes otherwise the message sequencing can get out of step.
-  long actual;
-  char* body = malloc(expected);
-  for (rc = 0, actual = 0;
-       actual < expected && rc >= 0;
-       actual += rc = recv(fd, body + actual, expected - actual, 0));
-
-  if (rc < 0)
-    fprintf(stderr, "recv(2) error: %li, expected: %li, actual: %li\n", rc, expected, actual);
-  else{
-    switch (cb_hdr.header.msg_type){
-      case MSG_TYPE_SEND:
-        qmsgsent(body, actual);
-        break;
-      case MSG_TYPE_RCVD:
+  switch (cb_data.header.msg_type){
+    case MSG_TYPE_SEND:
+      qmsgsent(cb_data.body.dt);
+      break;
+    case MSG_TYPE_RCVD:{
+      const long expected = cb_data.body.size;
+      // Don't use MSG_WAITALL since async sd1(-fd, ...) was used.  So call recv until we have
+      // the expected number of bytes otherwise the message sequencing can get out of step.
+      long actual;
+      char* body = malloc(expected);
+      for (rc = 0, actual = 0;
+           actual < expected && rc >= 0;
+           actual += rc = recv(fd, body + actual, expected - actual, 0));
+      if (rc < 0)
+        fprintf(stderr, "recv(2) error: %li, expected: %li, actual: %li\n", rc, expected, actual);
+      else
         qmsgrcvd(body, actual);
-        break;
-      case MSG_TYPE_DISCONN:
-        qdisconn(body, actual);
-        break;
-      default:
-        fprintf(stderr, "mqttCallback - invalid callback type: %u\n", cb_hdr.header.msg_type);
+      free(body);
+      break;
     }
+    case MSG_TYPE_DISCONN:
+      qdisconn();
+      break;
+    default:
+      fprintf(stderr, "mqttCallback - invalid callback type: %u\n", cb_data.header.msg_type);
   }
-
-  free(body);
   return (K)0;
 }
 
