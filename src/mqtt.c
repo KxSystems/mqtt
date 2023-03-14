@@ -279,13 +279,27 @@ EXP K pub(K topic, K msg, K kqos, K kret){
 /* Subscribe to a topic
  * topic = topic name as a symbol
 */
-EXP K sub(K topic){
+EXP K sub(K topic,K kqos){
   int err;
+  long qos;
   if(topic->t != -KS)
     return krr("topic type");
   if(client == 0)
     return krr("not connected");
-  if(MQTTCLIENT_SUCCESS != (err = MQTTClient_subscribe(client, topic->s, 1)))
+  switch(kqos->t){
+    case -KH:
+      qos = kqos->h;
+      break;
+    case -KI:
+      qos = kqos->i;
+      break;
+    case -KJ:
+      qos = kqos->j;
+      break;
+    default:
+      return krr("qos type");
+  }
+  if(MQTTCLIENT_SUCCESS != (err = MQTTClient_subscribe(client, topic->s, qos)))
     return krr((S)MQTTClient_strerror(err));
   return (K)0;
 }

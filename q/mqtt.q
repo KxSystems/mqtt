@@ -3,13 +3,14 @@
 connX:`mqttkdb 2:(`connX;3);
 init :`mqttkdb 2:(`init;1);
 pubx :`mqttkdb 2:(`pub ;4);
-sub  :`mqttkdb 2:(`sub ;1);
+subx :`mqttkdb 2:(`sub ;2);
 unsub:`mqttkdb 2:(`unsub;1);
 isConnected:`mqttkdb 2:(`isConnected;1);
 disconnect :`mqttkdb 2:(`disconnect;1);
 
 
 pub:.mqtt.pubx[;;1;0];
+sub:.mqtt.subx[;1];
 conn:{[tcpconn;pname;opt]connX[tcpconn;pname](enlist[`]!enlist(::)),opt};
 msgsent:{0N!(`msgsent;x);};
 disconn:{0N!(`disconn;x);};
