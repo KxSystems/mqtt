@@ -41,6 +41,10 @@ This messaging protocol is used extensively where a small software footprint is 
 
 :point_right: [`Install guide`](docs/install.md)
 
+## Debugging/Tracing
+
+:point_right: The underlying Paho MQTT library provides the ability to log diagnostic information to standard out or log files via an [environment variable](https://en.wikipedia.org/wiki/Environment_variable) as detailed [here](https://eclipse.dev/paho/files/mqttdoc/MQTTClient/html/tracing.html)
+
 ## Building From Source
 
 :point_right: [`Building guide`](docs/build.md)
