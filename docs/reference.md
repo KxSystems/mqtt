@@ -9,17 +9,21 @@ They allow you to interact with MQTT brokers and send and receive messages.
 `.mqtt`   **MQTT interface**
 
 **Broker interaction**<br>
-[`conn`](#mqttconn)      connect to a MQTT broker<br>
-[`pub`](#mqttpub)       publish a message to a topic<br>
-[`pubx`](#mqttpubx)      publish a message to a topic controlling qos and ret<br>
-[`sub`](#mqttsub)       subscribe to a topic<br>
-[`subx`](#mqttsubx)       subscribe to a topic<br>
-[`unsub`](#mqttunsub)     unsubscribe from a topic
+* [`conn`](#mqttconn)      connect to a MQTT broker<br>
+  * [proxy options](#proxy-options)
+  * [general connection options](#general-connection-options)
+  * [last-Will connection options](#last-will-connection-options)
+  * [TLS/SSL connections options](#tlsssl-connections-options)
+* [`pub`](#mqttpub)       publish a message to a topic<br>
+* [`pubx`](#mqttpubx)      publish a message to a topic controlling qos and ret<br>
+* [`sub`](#mqttsub)       subscribe to a topic<br>
+* [`subx`](#mqttsubx)       subscribe to a topic<br>
+* [`unsub`](#mqttunsub)     unsubscribe from a topic
 
 **Callback functions**<br>
-[`disconn`](#mqttdisconn)   manage disconnection events<br>
-[`msgrecv`](#mqttmsgrecv)   manage receipt of messages<br>
-[`msgsent`](#mqttmsgsent)   manage sending of messages
+* [`disconn`](#mqttdisconn)   manage disconnection events<br>
+* [`msgrecv`](#mqttmsgrecv)   manage receipt of messages<br>
+* [`msgsent`](#mqttmsgsent)   manage sending of messages
 
 The callbacks here to handle disconnections and the sending and receipt of messages are minimal implementations. 
 
@@ -66,6 +70,12 @@ q).mqtt.conn[hst;`src;`username`password!`myuser`mypass]
 q)opts:`trustStore`enableServerCertAuth`verify`sslVersion!((`$"/mqttq/server-certs/ca.crt");(0i);(0i);(0i))
 q).mqtt.conn[`$"ssl://localhost:1883";`rcv;opts];
 ```
+
+### Proxy Options
+
+The underlying Paho Mqtt C lib provides the ability to route traffic through a web proxy. These are set using standard web proxy environment variables
+* http_proxy, or 
+* https_proxy (for SSL/TLS enabled connections)
 
 ### General Connection Options
 | Name | Type | Details | Default |
