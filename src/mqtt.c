@@ -147,6 +147,18 @@ EXP K connX(K tcpconn,K pname, K opt){
       errStr = getIntFromList(propValues,row,&conn_opts.maxInflightMessages,"maxInflightMessages type incorrect");
     else if (strcmp(kS(propNames)[row],"cleanstart")==0)
       errStr = getIntFromList(propValues,row,&conn_opts.cleanstart,"cleanstart type incorrect");
+    else if (strcmp(kS(propNames)[row],"httpProxy")==0){
+      if(conn_opts.struct_version>7)
+          errStr = getStringFromList(propValues,row,&conn_opts.httpProxy,"httpProxy type incorrect");
+      else
+          errStr = "httpProxy requires newer paho mqtt lib";
+    }
+    else if (strcmp(kS(propNames)[row],"httpsProxy")==0){
+      if(conn_opts.struct_version>7)
+          errStr = getStringFromList(propValues,row,&conn_opts.httpsProxy,"httpsProxy type incorrect");
+      else
+          errStr = "httpsProxy requires newer paho mqtt lib";
+    }
     else if (strcmp(kS(propNames)[row],"lastWillTopic")==0){
       conn_opts.will = &will_opts;
       errStr = getStringFromList(propValues,row,&will_opts.topicName,"lastWillTopic type incorrect");}
