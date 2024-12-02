@@ -71,12 +71,6 @@ q)opts:`trustStore`enableServerCertAuth`verify`sslVersion!((`$"/mqttq/server-cer
 q).mqtt.conn[`$"ssl://localhost:1883";`rcv;opts];
 ```
 
-### Proxy Options
-
-The underlying Paho Mqtt C lib provides the ability to route traffic through a web proxy. These are set using standard web proxy environment variables
-* http_proxy, or 
-* https_proxy (for SSL/TLS enabled connections)
-
 ### General Connection Options
 | Name | Type | Details | Default |
 | ----------- | ----------- | ----------- | ----------- |
@@ -90,6 +84,9 @@ The underlying Paho Mqtt C lib provides the ability to route traffic through a w
 | MQTTVersion | int/long | Sets the version of MQTT to be used on the connect. `MQTTVERSION_DEFAULT (0)` = default: start with 3.1.1, and if that fails, fall back to 3.1 `MQTTVERSION_3_1 (3)` = only try version 3.1 `MQTTVERSION_3_1_1 (4)` = only try version 3.1.1 `MQTTVERSION_5 (5)` = only try version 5.0 | 0 |
 | maxInflightMessages | int/long | The maximum number of messages in flight | -1 |
 | cleanstart | int/long | V5 clean start flag.  Only clears state at the beginning of the session. | 0 |
+| httpProxy | sym | http proxy to use for connection (if required). Requires paho mqtt lib >= 1.3.7. If parameter not provided, connection will use environment variable `http_proxy` if it exists otherwise no proxy will be used. Format can be `http://user:password@domain.com:port` or `ip:port`  | |
+| httpsProxy | sym | https proxy to use for connection (if required). Requires paho mqtt lib >= 1.3.7. If parameter not provided, connection will use environment variable `https_proxy` if it exists otherwise no proxy will be used. Format can be `http://user:password@domain.com:port` or `ip:port` | |
+
 
 ### Last-Will Connection Options
 
