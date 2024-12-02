@@ -93,12 +93,42 @@ static void freeOpts(MQTTClient_connectOptions* conn_opts){
   free((void*)conn_opts->ssl->CApath);
 }
 
+#ifdef _WIN32
+void setenv(const char* env,const char* val,int notused){
+  int len=strlen(env);
+  char* setting=(char*)malloc(len+strlen(val)+2);
+  strcpy(setting,env);
+  strcpy(setting+len,"=");
+  if(val&&*val!=' ')
+    strcpy(setting+len+1,val);
+  _putenv(setting);
+  free(setting);
+}
+void unsetenv(const char* env){
+  setenv(env,"",1);
+}
+#endif
+void setProxyEnv(const char* sys,const char* sysval,const char* mqtt){
+  if((sysval&&*sysval==0)||(mqtt&&*mqtt==0)) /* unset default env if blank env or blank override env */
+    unsetenv(sys);
+  if(mqtt&&*mqtt)
+    setenv(sys,mqtt,1);                      /* use override env variables value */
+}
+void restoreProxyEnv(const char* sys,const char* sysval){
+ if(sysval)
+   setenv(sys,sysval,1);
+}
+
 /* Establish a tcp connection from a q process to mqtt client
  * tcpconn = tcp connection being connected to (symbol)
  * pname   = name to be associated with the connecting process (symbol)
  * opt     = connection options (dict - keys 'username' and 'password' currently supported as symbol types)
 */
 EXP K connX(K tcpconn,K pname, K opt){
+  static const char* HTTP_PROXY="http_proxy";
+  static const char* HTTPS_PROXY="https_proxy";
+  const char* system_proxy=getenv(HTTP_PROXY);
+  const char* system_proxys=getenv(HTTPS_PROXY);
   int err;
   if(tcpconn->t != -KS)
     return krr("addr type");
@@ -200,7 +230,13 @@ EXP K connX(K tcpconn,K pname, K opt){
     return freeOpts(&conn_opts),krr((S)MQTTClient_strerror(err));
 
   MQTTClient_setCallbacks(client, NULL, disconn, msgrcvd, msgsent);
+
+  setProxyEnv(HTTP_PROXY,system_proxy,getenv("mqtt_http_proxy"));     /* replace http_proxy setting with mqtt_http_proxy if available */
+  setProxyEnv(HTTPS_PROXY,system_proxys,getenv("mqtt_https_proxy"));  /* replace https_proxy setting with mqtt_https_proxy if available */
   err = MQTTClient_connect(client, &conn_opts);
+  restoreProxyEnv(HTTP_PROXY,system_proxy);
+  restoreProxyEnv(HTTPS_PROXY,system_proxys);
+
   freeOpts(&conn_opts);
 
   if(MQTTCLIENT_SUCCESS != err)
