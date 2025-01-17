@@ -475,8 +475,6 @@ K mqttCallback(int fd){
       break;
     case MSG_TYPE_RCVD:{
       const long expected = cb_data.body.size;
-      // Don't use MSG_WAITALL since async sd1(-fd, ...) was used.  So call recv until we have
-      // the expected number of bytes otherwise the message sequencing can get out of step.
       long actual;
       char* body = malloc(expected);
       for (rc = 0, actual = 0;
@@ -521,8 +519,7 @@ EXP K init(K UNUSED(X)){
     fprintf(stderr,"Init failed. socketpair: %s\n", getSysError(buff,sizeof(buff)));
     return 0;
   }
-  // Have to use (0 - fd) rather than simple negate, since SOCKET on Windows is unsigned ptr.
-  pr0(sd1(0 - spair[0], &mqttCallback));
+  pr0(sd1(spair[0], &mqttCallback));
   validinit = 1;
   atexit(detach);
   return 0;
