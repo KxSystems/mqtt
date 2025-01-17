@@ -94,7 +94,7 @@ static void freeOpts(MQTTClient_connectOptions* conn_opts){
 }
 
 #ifdef _WIN32
-void setenv(const char* env,const char* val,int notused){
+static void setenv(const char* env,const char* val,int notused){
   int len=strlen(env);
   char* setting=(char*)malloc(len+strlen(val)+2);
   strcpy(setting,env);
@@ -104,17 +104,17 @@ void setenv(const char* env,const char* val,int notused){
   _putenv(setting);
   free(setting);
 }
-void unsetenv(const char* env){
+static void unsetenv(const char* env){
   setenv(env,"",1);
 }
 #endif
-void setProxyEnv(const char* sys,const char* sysval,const char* mqtt){
+static void setProxyEnv(const char* sys,const char* sysval,const char* mqtt){
   if((sysval&&*sysval==0)||(mqtt&&*mqtt==0)) /* unset default env if blank env or blank override env */
     unsetenv(sys);
   if(mqtt&&*mqtt)
     setenv(sys,mqtt,1);                      /* use override env variables value */
 }
-void restoreProxyEnv(const char* sys,const char* sysval){
+static void restoreProxyEnv(const char* sys,const char* sysval){
  if(sysval)
    setenv(sys,sysval,1);
 }
@@ -430,21 +430,32 @@ static void pr0(K x){
 }
 
 // Callback function definitions
-void qmsgsent(MQTTClient_deliveryToken p){
+static void qmsgsent(MQTTClient_deliveryToken p){
   pr0(k(0, (char*)".mqtt.msgsent", kj(p), (K)0));
 }
 
-void qmsgrcvd(char* p,long sz){
+static void qmsgrcvd(char* p,long sz){
   K topic = kp(p);
   p += topic->n+1;
   K msg = kpn(p, sz - (topic->n+1));
   pr0(k(0, (char*)".mqtt.msgrcvd", topic, msg, (K)0));
 }
 
-void qdisconn(){
+static void qdisconn(){
   pr0(k(0, (char*)".mqtt.disconn", ktn(0,0), (K)0));
 }
 
+static char* getSysError(char* buff,int len){
+  buff[0]=0;
+#ifdef _WIN32
+  FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0,
+                WSAGetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buff,
+                len, 0);
+#else
+  strerror_r(errno,buff,len);
+#endif
+  return buff;
+}
 
 /* Socketpair initialization, callback definition and clean up functionality
  * detach function initialized at exit, socketpair start issues handled
@@ -454,7 +465,8 @@ K mqttCallback(int fd){
   CallbackData cb_data;
   long rc = recv(fd, (char*)&cb_data, sizeof(cb_data), 0);
   if (rc < (long)sizeof(cb_data)){
-    fprintf(stderr, "recv(1) error: %li\n", rc);
+    char buff[256];
+    fprintf(stderr, "recv(%li) error: %s\n", rc, getSysError(buff,sizeof(buff)));
     return (K)0;
   }
   switch (cb_data.header.msg_type){
@@ -470,8 +482,10 @@ K mqttCallback(int fd){
       for (rc = 0, actual = 0;
            actual < expected && rc >= 0;
            actual += rc = recv(fd, body + actual, expected - actual, 0));
-      if (rc < 0)
-        fprintf(stderr, "recv(2) error: %li, expected: %li, actual: %li\n", rc, expected, actual);
+      if (rc < 0){
+        char buff[256];
+        fprintf(stderr, "recv(%li) error: %s, expected: %li, actual: %li\n", rc, getSysError(buff,sizeof(buff)), expected, actual);
+      }
       else
         qmsgrcvd(body, actual);
       free(body);
@@ -503,7 +517,8 @@ EXP K init(K UNUSED(X)){
   if(!(0==validinit))
     return 0;
   if(dumb_socketpair(spair,1) == SOCKET_ERROR){
-    fprintf(stderr,"Init failed. socketpair: %s\n", strerror(errno));
+    char buff[256];
+    fprintf(stderr,"Init failed. socketpair: %s\n", getSysError(buff,sizeof(buff)));
     return 0;
   }
   // Have to use (0 - fd) rather than simple negate, since SOCKET on Windows is unsigned ptr.
