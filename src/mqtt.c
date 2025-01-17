@@ -393,19 +393,54 @@ static void msgsent(void* context, MQTTClient_deliveryToken dt){
   send(spair[1], &msg, sizeof(CallbackData), 0);
 }
 
+static char* getSysError(char* buf,int len){
+  buf[0]=0;
+#ifdef _WIN32
+  FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0,
+                WSAGetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf,
+                len, 0);
+#else
+  strerror_r(errno,buf,len);
+#endif
+  return buf;
+}
+
 static int msgrcvd(void* context, char* topic, int unused, MQTTClient_message* mq_msg){
   // Body contains: <topic_len><topic><payload>
   (void)unused;(void)context;
-  long topic_len = strlen(topic)+1;
-  long msg_size = sizeof(CallbackData) + topic_len + mq_msg->payloadlen;
-  CallbackData* msg = malloc(msg_size);
-  msg->body.size = topic_len + mq_msg->payloadlen;
-  msg->header.msg_type = MSG_TYPE_RCVD;
-  char* p = (char*)&(msg[1]);
-  memcpy(p, topic, topic_len);
-  memcpy(p += topic_len, mq_msg->payload, mq_msg->payloadlen);
-  send(spair[1], (char*)msg, msg_size, 0);
-  free(msg);
+#ifdef _WIN32
+  WSABUF buffers[3];
+  DWORD bytesSent=0;
+#else
+  struct iovec iov[3];
+#endif
+  long topic_len=strlen(topic)+1;
+  CallbackData msg;
+  msg.body.size = topic_len + mq_msg->payloadlen;
+  msg.header.msg_type = MSG_TYPE_RCVD;
+#ifdef _WIN32
+  buffers[0].buf=&msg;
+  buffers[0].len=sizeof(CallbackData);
+  buffers[1].buf=topic;
+  buffers[1].len=topic_len;
+  buffers[2].buf=mq_msg->payload;
+  buffers[2].len=mq_msg->payloadlen;
+  if(SOCKET_ERROR==WSASend(spair[1],buffers,3,&bytesSent,0,NULL,NULL)){
+    char buf[256];
+    fprintf(stderr, "WSASend error: %s\n", getSysError(buf,sizeof(buf)));
+  }
+#else
+  iov[0].iov_base=&msg;
+  iov[0].iov_len=sizeof(CallbackData);
+  iov[1].iov_base=topic;
+  iov[1].iov_len=topic_len;
+  iov[2].iov_base=mq_msg->payload;
+  iov[2].iov_len=mq_msg->payloadlen;
+  if(-1==writev(spair[1],iov,sizeof(iov)/sizeof(struct iovec))){
+    char buf[256];
+    fprintf(stderr, "send error: %s\n", getSysError(buf,sizeof(buf)));
+  }
+#endif
   MQTTClient_freeMessage(&mq_msg);
   MQTTClient_free(topic);
   return 1;
@@ -445,18 +480,6 @@ static void qdisconn(){
   pr0(k(0, (char*)".mqtt.disconn", ktn(0,0), (K)0));
 }
 
-static char* getSysError(char* buff,int len){
-  buff[0]=0;
-#ifdef _WIN32
-  FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, 0,
-                WSAGetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buff,
-                len, 0);
-#else
-  strerror_r(errno,buff,len);
-#endif
-  return buff;
-}
-
 /* Socketpair initialization, callback definition and clean up functionality
  * detach function initialized at exit, socketpair start issues handled
  * callback function set to loop on socketpair connection
@@ -465,8 +488,8 @@ K mqttCallback(int fd){
   CallbackData cb_data;
   long rc = recv(fd, (char*)&cb_data, sizeof(cb_data), 0);
   if (rc < (long)sizeof(cb_data)){
-    char buff[256];
-    fprintf(stderr, "recv(%li) error: %s\n", rc, getSysError(buff,sizeof(buff)));
+    char buf[256];
+    fprintf(stderr, "recv(%li) error: %s\n", rc, getSysError(buf,sizeof(buf)));
     return (K)0;
   }
   switch (cb_data.header.msg_type){
@@ -481,8 +504,8 @@ K mqttCallback(int fd){
            actual < expected && rc >= 0;
            actual += rc = recv(fd, body + actual, expected - actual, 0));
       if (rc < 0){
-        char buff[256];
-        fprintf(stderr, "recv(%li) error: %s, expected: %li, actual: %li\n", rc, getSysError(buff,sizeof(buff)), expected, actual);
+        char buf[256];
+        fprintf(stderr, "recv(%li) error: %s, expected: %li, actual: %li\n", rc, getSysError(buf,sizeof(buf)), expected, actual);
       }
       else
         qmsgrcvd(body, actual);
@@ -515,8 +538,8 @@ EXP K init(K UNUSED(X)){
   if(!(0==validinit))
     return 0;
   if(dumb_socketpair(spair,1) == SOCKET_ERROR){
-    char buff[256];
-    fprintf(stderr,"Init failed. socketpair: %s\n", getSysError(buff,sizeof(buff)));
+    char buf[256];
+    fprintf(stderr,"Init failed. socketpair: %s\n", getSysError(buf,sizeof(buf)));
     return 0;
   }
   pr0(sd1(spair[0], &mqttCallback));
