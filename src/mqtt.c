@@ -368,16 +368,14 @@ EXP K unsub(K topic){
 
 // Callback data structure
 typedef struct CallbackDataStr{
-  union{
-    char reserved[8];   // reserve space for flags, aligned to 64 bit word
-    enum{
+  enum{
       MSG_TYPE_SEND = 9876,   // arbitrary uncommon value
       MSG_TYPE_RCVD,
       MSG_TYPE_DISCONN
     } msg_type;
-  } header;
+  unsigned int topic_len;
   union{
-    long size;
+    long payload_len;
     MQTTClient_deliveryToken dt;
   } body;
   // Start of dynamic data
@@ -389,7 +387,7 @@ static void msgsent(void* context, MQTTClient_deliveryToken dt){
   // Body contains: <dt>
   CallbackData msg;
   msg.body.dt = dt;
-  msg.header.msg_type = MSG_TYPE_SEND;
+  msg.msg_type = MSG_TYPE_SEND;
   send(spair[1], &msg, sizeof(CallbackData), 0);
 }
 
@@ -414,10 +412,11 @@ static int msgrcvd(void* context, char* topic, int unused, MQTTClient_message* m
 #else
   struct iovec iov[3];
 #endif
-  long topic_len=strlen(topic)+1;
+  unsigned int topic_len=strlen(topic);
   CallbackData msg;
-  msg.body.size = topic_len + mq_msg->payloadlen;
-  msg.header.msg_type = MSG_TYPE_RCVD;
+  msg.msg_type = MSG_TYPE_RCVD;
+  msg.topic_len = topic_len;
+  msg.body.payload_len = topic_len + mq_msg->payloadlen;
 #ifdef _WIN32
   buffers[0].buf=&msg;
   buffers[0].len=sizeof(CallbackData);
@@ -450,8 +449,7 @@ static void disconn(void* context, char* cause){
   (void)context;(void)cause;
   // Body contains: <>
   CallbackData msg;
-  msg.body.size = 0;
-  msg.header.msg_type = MSG_TYPE_DISCONN;
+  msg.msg_type = MSG_TYPE_DISCONN;
   send(spair[1], &msg, sizeof(CallbackData), 0);
 }
 
@@ -469,11 +467,10 @@ static void qmsgsent(MQTTClient_deliveryToken p){
   pr0(k(0, (char*)".mqtt.msgsent", kj(p), (K)0));
 }
 
-static void qmsgrcvd(char* p,long sz){
-  K topic = kp(p);
-  p += topic->n+1;
-  K msg = kpn(p, sz - (topic->n+1));
-  pr0(k(0, (char*)".mqtt.msgrcvd", topic, msg, (K)0));
+static void qmsgrcvd(char* topic,unsigned int topic_len,char* payload,long payload_len){
+  K t = kpn(topic,topic_len);
+  K msg = kpn(payload, payload_len);
+  pr0(k(0, (char*)".mqtt.msgrcvd", t, msg, (K)0));
 }
 
 static void qdisconn(){
@@ -492,23 +489,23 @@ K mqttCallback(int fd){
     fprintf(stderr, "recv(%li) error: %s\n", rc, getSysError(buf,sizeof(buf)));
     return (K)0;
   }
-  switch (cb_data.header.msg_type){
+  switch (cb_data.msg_type){
     case MSG_TYPE_SEND:
       qmsgsent(cb_data.body.dt);
       break;
     case MSG_TYPE_RCVD:{
-      const long expected = cb_data.body.size;
+      const long expected = cb_data.body.payload_len;
       long actual;
       char* body = malloc(expected);
       for (rc = 0, actual = 0;
            actual < expected && rc >= 0;
            actual += rc = recv(fd, body + actual, expected - actual, 0));
-      if (rc < 0){
+      if (rc <= 0){
         char buf[256];
         fprintf(stderr, "recv(%li) error: %s, expected: %li, actual: %li\n", rc, getSysError(buf,sizeof(buf)), expected, actual);
       }
       else
-        qmsgrcvd(body, actual);
+        qmsgrcvd(body, cb_data.topic_len, body+cb_data.topic_len, expected-cb_data.topic_len);
       free(body);
       break;
     }
@@ -516,7 +513,7 @@ K mqttCallback(int fd){
       qdisconn();
       break;
     default:
-      fprintf(stderr, "mqttCallback - invalid callback type: %u\n", cb_data.header.msg_type);
+      fprintf(stderr, "mqttCallback - invalid callback type: %u\n", cb_data.msg_type);
   }
   return (K)0;
 }
