@@ -14,7 +14,7 @@ cbfn:{[topic;msg]
       data:";" vs msg;
       .mqtt.tab,:(`$topic;"P"$data 0;.z.p;"S"$data 1)}
 
-.mqtt.msgrcvd:{cbfn[x;y];0N!"Message received"}
+.mqtt.msgrcvd:{cbfn[x;y];}
 
 // Connect and subscribe
 //.mqtt.conn[`$"tcp://host.docker.internal:1883";`rcv;()!()];
