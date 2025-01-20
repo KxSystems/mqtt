@@ -512,9 +512,13 @@ K mqttCallback(int fd){
       while(actual<cb_data.body.payload_len){
         c=readv(fd,iov,iov_c);
         if(c<=0){
-          char buf[256];
-          fprintf(stderr, "readv error: %s\n", getSysError(buf,sizeof(buf)));
-          break;
+          if(EINTR==errno)
+            continue;
+          else{
+            char buf[256];
+            fprintf(stderr, "readv error: %s\n", getSysError(buf,sizeof(buf)));
+            break;
+          }
         }
         actual+=c;
         if(actual<cb_data.topic_len){
