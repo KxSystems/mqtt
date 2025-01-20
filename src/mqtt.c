@@ -467,12 +467,6 @@ static void qmsgsent(MQTTClient_deliveryToken p){
   pr0(k(0, (char*)".mqtt.msgsent", kj(p), (K)0));
 }
 
-static void qmsgrcvd(char* topic,unsigned int topic_len,char* payload,long payload_len){
-  K t = kpn(topic,topic_len);
-  K msg = kpn(payload, payload_len);
-  pr0(k(0, (char*)".mqtt.msgrcvd", t, msg, (K)0));
-}
-
 static void qdisconn(){
   pr0(k(0, (char*)".mqtt.disconn", ktn(0,0), (K)0));
 }
@@ -494,19 +488,50 @@ K mqttCallback(int fd){
       qmsgsent(cb_data.body.dt);
       break;
     case MSG_TYPE_RCVD:{
-      const long expected = cb_data.body.payload_len;
-      long actual;
-      char* body = malloc(expected);
-      for (rc = 0, actual = 0;
-           actual < expected && rc >= 0;
-           actual += rc = recv(fd, body + actual, expected - actual, 0));
-      if (rc <= 0){
+      K topic = ktn(KC,cb_data.topic_len);
+      K msg = ktn(KC, cb_data.body.payload_len-cb_data.topic_len);
+#ifdef _WIN32
+      DWORD actual=0;
+      DWORD flags=MSG_WAITALL;
+      WSABUF buffers[2];
+      buffers[0].buf=&(kG(topic));
+      buffers[0].len=cb_data.topic_len;
+      buffers[1].buf=&(kG(msg));
+      buffers[1].len=msg->n;
+      if (WSARecv(fd, buffers, 2, &actual,  &flags, NULL, NULL) == SOCKET_ERROR) {
         char buf[256];
-        fprintf(stderr, "recv(%li) error: %s, expected: %li, actual: %li\n", rc, getSysError(buf,sizeof(buf)), expected, actual);
+        fprintf(stderr, "WSARecv error: %s\n", getSysError(buf,sizeof(buf)));
       }
-      else
-        qmsgrcvd(body, cb_data.topic_len, body+cb_data.topic_len, expected-cb_data.topic_len);
-      free(body);
+#else
+      ssize_t actual=0,c=0,iov_c=2;
+      struct iovec iov[2];
+      iov[0].iov_base=&(kG(topic));
+      iov[0].iov_len=cb_data.topic_len;
+      iov[1].iov_base=&(kG(msg));
+      iov[1].iov_len=msg->n;
+      while(actual<cb_data.body.payload_len){
+        c=readv(fd,iov,iov_c);
+        if(c<=0){
+          char buf[256];
+          fprintf(stderr, "readv error: %s\n", getSysError(buf,sizeof(buf)));
+          break;
+        }
+        actual+=c;
+        if(actual<cb_data.topic_len){
+            iov[0].iov_base=&(kG(topic)[actual]);
+            iov[0].iov_len=cb_data.topic_len-actual;
+        }else{
+            iov_c=1;
+            iov[0].iov_base=&(kG(msg)[actual-cb_data.topic_len]);
+            iov[0].iov_len=msg->n-(actual-cb_data.topic_len);
+        }
+      }
+#endif
+      if(actual==cb_data.body.payload_len)
+        pr0(k(0, (char*)".mqtt.msgrcvd", topic, msg, (K)0));
+      else{
+        r0(topic);r0(msg);
+      }
       break;
     }
     case MSG_TYPE_DISCONN:
