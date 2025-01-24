@@ -127,8 +127,10 @@ static void restoreProxyEnv(const char* sys,const char* sysval){
 EXP K connX(K tcpconn,K pname, K opt){
   static const char* HTTP_PROXY="http_proxy";
   static const char* HTTPS_PROXY="https_proxy";
+  static const char* NO_PROXY="no_proxy";
   const char* system_proxy=getenv(HTTP_PROXY);
   const char* system_proxys=getenv(HTTPS_PROXY);
+  const char* system_noproxy=getenv(NO_PROXY);
   int err;
   if(tcpconn->t != -KS)
     return krr("addr type");
@@ -233,9 +235,11 @@ EXP K connX(K tcpconn,K pname, K opt){
 
   setProxyEnv(HTTP_PROXY,system_proxy,getenv("mqtt_http_proxy"));     /* replace http_proxy setting with mqtt_http_proxy if available */
   setProxyEnv(HTTPS_PROXY,system_proxys,getenv("mqtt_https_proxy"));  /* replace https_proxy setting with mqtt_https_proxy if available */
+  setProxyEnv(NO_PROXY,system_noproxy,getenv("mqtt_no_proxy"));       /* replace https_proxy setting with mqtt_https_proxy if available */
   err = MQTTClient_connect(client, &conn_opts);
   restoreProxyEnv(HTTP_PROXY,system_proxy);
   restoreProxyEnv(HTTPS_PROXY,system_proxys);
+  restoreProxyEnv(HTTPS_PROXY,system_noproxy);
 
   freeOpts(&conn_opts);
 

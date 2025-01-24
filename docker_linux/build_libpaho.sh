@@ -2,8 +2,8 @@
 	
 cd /source
 
-wget https://github.com/eclipse/paho.mqtt.c/archive/refs/tags/v1.3.13.tar.gz
-tar xvf v1.3.13.tar.gz -C ./paho.mqtt.c --strip-components=1
+wget https://github.com/eclipse-paho/paho.mqtt.c/releases/download/v1.3.14/Eclipse-Paho-MQTT-C-1.3.14-Linux.tar.gz
+tar xvf Eclipse-Paho-MQTT-C-1.3.14-Linux.tar.gz -C ./paho.mqtt.c --strip-components=1
 
 cd paho.mqtt.c
 
