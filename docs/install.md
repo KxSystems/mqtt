@@ -11,6 +11,9 @@
 ## Installing a release
 
 1.  Ensure [MQTT C API](https://github.com/eclipse/paho.mqtt.c/releases) (`paho.mqtt.c`) is installed.
+
+    -    Linux: Paho MQTT provides a pre-build binary which may be built against a more recent version of glibc that may be available on your system, resulting in an error such as `'/lib64/libc.so.6: version `GLIBC_2.38' not found`. To get around this, build from the paho mqtt library from the source code package. See docker_linux/build_libpaho.sh as an example of how to download and build into a `tar.gz` package.
+
 2.  Make the MQTT library available from kdb+:
 
     -   Linux: Add the `lib` directory, which includes `include` and `lib` to the `LD_LIBRARY_PATH` environment variable e.g. if unzipped to `/usr/local/Eclipse-Paho-MQTT-C/`, run:

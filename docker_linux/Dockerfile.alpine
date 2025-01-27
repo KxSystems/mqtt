@@ -10,7 +10,7 @@ RUN mkdir -p /source/mqtt/include
 COPY docker_linux/mqtt_build.sh /source
 
 COPY CMakeLists.txt /source/mqtt
-COPY docker_linux/build_libpaho.sh /source/mqtt
+COPY docker_linux/build_libpaho.sh /source/
 COPY install.sh /source/mqtt
 COPY README.md /source/mqtt
 COPY LICENSE /source/mqtt
@@ -35,7 +35,7 @@ RUN apk add --update && \
     apk add gcompat && \    
 	apk add libnsl && \
     cd /source && \
-    /bin/sh /source/mqtt/build_libpaho.sh && \
+    /bin/sh build_libpaho.sh && tar xvf Eclipse-Paho*.tar.gz -C ./paho.mqtt.c --strip-components=1 && \
     apk del gcc && \
     apk del cmake && \
     apk del make && \
