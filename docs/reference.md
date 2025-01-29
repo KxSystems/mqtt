@@ -77,20 +77,25 @@ The underlying Paho Mqtt C lib provides the ability to route traffic through a w
 These can be set using standard web proxy environment variables or parameters per connection. 
 Format can be `http(s)://user:password@domain.com:port` or `ip:port`.
 
+Since Paho Mqtt v1.3.14, the environment variable `PAHO_C_CLIENT_USE_HTTP_PROXY` must be set to `TRUE` in order to
+use environment variables for proxy settings.
+
 If multiple options defined, the http proxy configuration are listed below in descending precendence:
 
 1. [Connection option](#general-connection-options) `httpProxy`
 2. Environment variable `mqtt_http_proxy`
 3. Environment variable `http_proxy`
 
-and for https (TLS/SSL) proxy configuration:
+, for https (TLS/SSL) proxy configuration:
 
 1. [Connection option](#general-connection-options) `httpsProxy`
 2. Environment variable `mqtt_https_proxy`
 3. Environment variable `https_proxy`
 
-To prevent mqtt from using any proxy, when http_proxy/https_proxy is being used by another application, set the following on linux/macOS `export mqtt_http_proxy=` or on windows
-set to a space (blank character) `set mqtt_http_proxy= `
+and for `no_proxy` configuration:
+
+1. Environment variable `mqtt_no_proxy`
+2. Environment variable `no_proxy`
 
 ### General Connection Options
 
