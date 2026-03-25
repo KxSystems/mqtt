@@ -1,7 +1,7 @@
 ##%% General Settings %%##vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv#
 
 # CMake Version
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.1...3.30)
 
 # Name of package
 project(mqttkdb C)
@@ -131,18 +131,41 @@ file(COPY q/ DESTINATION ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/q/)
 # Copy built shared object into package directory after build instead of during installation
 add_custom_command(TARGET ${MY_LIBRARY_NAME}
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${MY_LIBRARY_NAME}>" ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/lib/${MY_LIBRARY_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
-    DEPENDS ${MY_LIBRARY_NAME}
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        "${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/lib"
+    COMMAND ${CMAKE_COMMAND} -E copy
+        "$<TARGET_FILE:${MY_LIBRARY_NAME}>"
+        "${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/lib/"
 )
+
 add_custom_command(TARGET ${MY_SSL_LIBRARY_NAME}
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${MY_SSL_LIBRARY_NAME}>" ${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/lib/${MY_SSL_LIBRARY_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
-    DEPENDS ${MY_SSL_LIBRARY_NAME}
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        "${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/lib"
+    COMMAND ${CMAKE_COMMAND} -E copy
+        "$<TARGET_FILE:${MY_SSL_LIBRARY_NAME}>"
+        "${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/lib/"
 )
 
+if(POLICY CMP0177)
+  cmake_policy(SET CMP0177 NEW)
+endif()
 
+set(_qhome "$ENV{QHOME}")
+set(_lib_dest "${_qhome}/${OSFLAG}${BITNESS}")
+set(_q_dest   "${_qhome}")
 
-# Install at Release
-install(TARGETS ${MY_LIBRARY_NAME} DESTINATION "$ENV{QHOME}/${OSFLAG}${BITNESS}/" CONFIGURATIONS Release)
-install(TARGETS ${MY_SSL_LIBRARY_NAME} DESTINATION "$ENV{QHOME}/${OSFLAG}${BITNESS}/" CONFIGURATIONS Release)
-install(DIRECTORY "q/" DESTINATION "$ENV{QHOME}" CONFIGURATIONS Release)
+if(COMMAND cmake_path)
+  cmake_path(NORMAL_PATH _lib_dest)
+  cmake_path(NORMAL_PATH _q_dest)
+endif()
+
+install(TARGETS
+    ${MY_LIBRARY_NAME}
+    ${MY_SSL_LIBRARY_NAME}
+  DESTINATION "${_lib_dest}"
+  CONFIGURATIONS Release)
+
+install(DIRECTORY "q/"
+  DESTINATION "${_q_dest}"
+  CONFIGURATIONS Release)
