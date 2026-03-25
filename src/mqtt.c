@@ -11,6 +11,7 @@
 #define EXP __declspec(dllexport)
 static SOCKET spair[2];
 #else
+#include <sys/uio.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/socket.h>
