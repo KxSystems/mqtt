@@ -16,7 +16,7 @@ jobs:
 
     env:
       MQTT_INSTALL_DIR: ${{ github.workspace }}\cbuild
-      OUTPUT_FILE: mqttkdb-win.tgz
+      OUTPUT_FILE: mqttkdb-win.zip
       QHOME: ${{ github.workspace }}\qhome
 
     steps:
@@ -58,7 +58,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v6
         with:
-          name: kdbldap-win
+          name: kdbmqtt-win
           path: ${{ env.OUTPUT_FILE }}
           retention-days: 1
 
