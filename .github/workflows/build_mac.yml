@@ -47,7 +47,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v6
         with:
-          name: kdbldap-mac
+          name: kdbmqtt-mac
           path: ${{ env.OUTPUT_FILE }}
           retention-days: 1
 
