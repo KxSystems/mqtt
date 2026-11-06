@@ -30,7 +30,7 @@
 
     -   Windows: Add `paho-mqtt3c.dll` and `paho-mqtt3cs.dll` to the kdb+ directory e.g. `C:\q\w64` for 64-bit.
 
-3.  Download the latest release of the MQTT interface from our [releases page](https://github.com/KxSystems/mqtt). To install shared library and q files, use:
+3.  Download the latest release of the MQTT interface from our [releases page](https://github.com/KxSystems/mqtt/releases/tag/1.4.4). To install shared library and q files, use:
 
     ```shell
     # Linux/MacOS
